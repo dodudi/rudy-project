@@ -1,0 +1,78 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Spring Boot
+*.jar
+*.war
+*.ear
+!gradle/wrapper/gradle-wrapper.jar
+!maven/wrapper/maven-wrapper.jar
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# Environment / Secrets
+.env
+.env.*
+application-local.yml
+application-local.properties
+application-secret.yml
+application-secret.properties
+
+# Compiled class files
+*.class
+
+# Package files
+*.zip
+*.tar.gz
+*.rar
+
+# STS / Spring Tool Suite
+.apt_generated
+.factorypath
+
+# NetBeans
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# Kotlin
+*.kotlin_module
+
+# Test output
+test-results/
+surefire-reports/
+
+# Docker override files
+docker-compose.override.yml
