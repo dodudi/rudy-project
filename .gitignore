@@ -32,7 +32,6 @@ Thumbs.db
 *.jar
 *.war
 *.ear
-!gradle/wrapper/gradle-wrapper.jar
 !maven/wrapper/maven-wrapper.jar
 
 # Logs
@@ -76,3 +75,27 @@ surefire-reports/
 
 # Docker override files
 docker-compose.override.yml
+
+HELP.md
+.gradle
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### STS ###
+.settings
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### IntelliJ IDEA ###
+.idea
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
