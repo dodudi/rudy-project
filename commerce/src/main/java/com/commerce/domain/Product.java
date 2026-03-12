@@ -45,4 +45,11 @@ public class Product {
     @Column(updatable = true)
     @LastModifiedDate
     private Instant updatedAt;
+
+    public void decreaseStock(int quantity) {
+        if (this.stock < quantity) {
+            throw new IllegalStateException("재고 부족: " + this.name);
+        }
+        this.stock -= quantity;
+    }
 }
