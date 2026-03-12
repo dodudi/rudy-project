@@ -19,6 +19,7 @@ services:
       POSTGRES_USER: test
       POSTGRES_PASSWORD: test1234
       POSTGRES_DB: redis-study
+    restart: unless-stopped
     volumes:
       - ./postgresql-data:/var/lib/postgresql/data
     networks:
@@ -39,6 +40,7 @@ services:
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    restart: unless-stopped
     networks:
       - backend-net
 
