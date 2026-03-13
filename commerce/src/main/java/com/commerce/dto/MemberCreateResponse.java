@@ -8,12 +8,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MemberCreateResponse {
 
+    private final Long id;
+
     private final String username;
 
     private final String nickname;
 
     public static MemberCreateResponse from(Member member) {
-        return new MemberCreateResponse(member.getUsername(), member.getNickname());
+        return new MemberCreateResponse(member.getId(), member.getUsername(), member.getNickname());
     }
 
 }
