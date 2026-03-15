@@ -3,6 +3,7 @@ package com.payment.service;
 import com.payment.domain.Payment;
 import com.payment.domain.PaymentStatus;
 import com.payment.dto.PaymentRequestEvent;
+import com.payment.dto.PaymentResponse;
 import com.payment.dto.PaymentResultEvent;
 import com.payment.event.PaymentResultProducer;
 import com.payment.repository.PaymentRepository;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
@@ -22,6 +24,11 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final PaymentResultProducer paymentResultProducer;
     private final ReactiveRedisTemplate<String, String> reactiveRedisTemplate;
+
+    public Flux<PaymentResponse> getPayments() {
+        return paymentRepository.findAll()
+                .map(PaymentResponse::from);
+    }
 
     public Mono<Void> process(PaymentRequestEvent event) {
         String idempotentKey = "payment:idempotent:" + event.orderId();
