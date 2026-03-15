@@ -1,6 +1,7 @@
 package com.commerce.controller;
 
 import com.commerce.dto.MemberCreateRequest;
+import com.commerce.dto.MemberFilterRequest;
 import com.commerce.dto.MemberResponse;
 import com.commerce.service.MemberService;
 import jakarta.validation.Valid;
@@ -26,8 +27,10 @@ public class MemberController {
     }
 
     @GetMapping
-    public ResponseEntity<List<MemberResponse>> getMembers() {
-        List<MemberResponse> members = memberService.getMembers();
+    public ResponseEntity<List<MemberResponse>> getMembers(
+            @ModelAttribute MemberFilterRequest filter
+    ) {
+        List<MemberResponse> members = memberService.getMembers(filter);
         return ResponseEntity.ok(members);
     }
 }
