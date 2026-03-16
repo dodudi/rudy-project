@@ -137,6 +137,44 @@
     <p id="create-result" class="result-msg"></p>
   </div>
 
+  <!-- 동시성 테스트 -->
+  <div class="card">
+    <h2>동시성 테스트 — 동시 주문</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>상품</label>
+        <select id="stress-productId"></select>
+      </div>
+      <div class="form-group">
+        <label>수량 (건당)</label>
+        <input type="number" id="stress-quantity" value="1" min="1" style="min-width:80px;">
+      </div>
+      <div class="form-group">
+        <label>회원 ID 시작</label>
+        <input type="number" id="stress-memberStart" value="1" min="1" style="min-width:100px;">
+      </div>
+      <div class="form-group">
+        <label>동시 요청 수</label>
+        <input type="number" id="stress-count" value="5" min="1" max="100" style="min-width:100px;">
+      </div>
+      <button class="btn-primary" onclick="runStressTest()">동시 실행</button>
+    </div>
+    <div id="stress-progress" style="margin-top:12px;display:none;">
+      <div style="font-size:13px;color:#666;margin-bottom:6px;">
+        성공: <span id="stress-ok" style="color:#16a34a;font-weight:600;">0</span>
+        &nbsp;|&nbsp;
+        실패: <span id="stress-fail" style="color:#ef4444;font-weight:600;">0</span>
+        &nbsp;|&nbsp;
+        전체: <span id="stress-total">0</span>
+      </div>
+      <div id="stress-bar-wrap" style="background:#e5e7eb;border-radius:4px;height:8px;overflow:hidden;">
+        <div id="stress-bar-ok"   style="height:100%;background:#16a34a;float:left;transition:width .2s;width:0%"></div>
+        <div id="stress-bar-fail" style="height:100%;background:#ef4444;float:left;transition:width .2s;width:0%"></div>
+      </div>
+    </div>
+    <div id="stress-log" style="margin-top:12px;max-height:260px;overflow-y:auto;font-size:12px;font-family:monospace;"></div>
+  </div>
+
   <!-- 주문 목록 조회 -->
   <div class="card">
     <h2>주문 목록 조회</h2>
@@ -271,6 +309,7 @@
           `).join('')}</tbody>
         </table>`;
       refreshOrderItemSelects();
+      refreshStressProductSelect();
     } catch (e) { container.innerHTML = `<p class="result-err">오류: ${e.message}</p>`; }
   }
 
@@ -370,6 +409,75 @@
       document.getElementById(id).value = '';
     });
     document.getElementById('order-table-container').innerHTML = '<p class="empty">조회 버튼을 눌러주세요.</p>';
+  }
+
+  // ── 동시성 테스트 ──────────────────────────────────────
+  function refreshStressProductSelect() {
+    const sel = document.getElementById('stress-productId');
+    sel.innerHTML = productOptions();
+  }
+
+  async function runStressTest() {
+    const productId   = Number(document.getElementById('stress-productId').value);
+    const quantity    = Number(document.getElementById('stress-quantity').value)    || 1;
+    const memberStart = Number(document.getElementById('stress-memberStart').value) || 1;
+    const count       = Number(document.getElementById('stress-count').value)       || 1;
+
+    if (!productId) { alert('상품을 선택해주세요.'); return; }
+
+    const log      = document.getElementById('stress-log');
+    const progress = document.getElementById('stress-progress');
+    log.innerHTML  = '';
+    progress.style.display = 'block';
+
+    let ok = 0, fail = 0;
+    const total = count;
+
+    function updateProgress() {
+      document.getElementById('stress-ok').textContent   = ok;
+      document.getElementById('stress-fail').textContent = fail;
+      document.getElementById('stress-total').textContent = total;
+      document.getElementById('stress-bar-ok').style.width   = (ok   / total * 100) + '%';
+      document.getElementById('stress-bar-fail').style.width = (fail / total * 100) + '%';
+    }
+
+    function appendLog(msg, success) {
+      const line = document.createElement('div');
+      line.style.color = success ? '#16a34a' : '#ef4444';
+      line.textContent = msg;
+      log.appendChild(line);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    updateProgress();
+
+    const requests = Array.from({ length: count }, (_, i) => {
+      const memberId = memberStart + i;
+      return fetch(`${BASE}/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memberId, orderItems: [{ productId, quantity }] })
+      })
+      .then(async res => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.orderId === undefined) {
+          throw new Error(data.message ?? `HTTP ${res.status}`);
+        }
+        ok++;
+        updateProgress();
+        appendLog(`[성공] 회원 ${memberId} → 주문 ID: ${data.orderId}, ${(data.totalAmount ?? 0).toLocaleString()}원`, true);
+      })
+      .catch(e => {
+        fail++;
+        updateProgress();
+        appendLog(`[실패] 회원 ${memberId} → ${e.message}`, false);
+      });
+    });
+
+    await Promise.all(requests);
+    appendLog(`─── 완료: 성공 ${ok} / 실패 ${fail} / 전체 ${total} ───`, ok > 0);
+    fetchProducts();
+    fetchOrders();
   }
 
   // ── 초기 로드 ──────────────────────────────────────────
