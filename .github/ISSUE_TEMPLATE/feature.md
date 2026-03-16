@@ -12,12 +12,6 @@ assignees: ""
 
 ---
 
-## User Story
-
-- 사용자는 ~할 수 있다
-
----
-
 ## Requirements
 
 -
