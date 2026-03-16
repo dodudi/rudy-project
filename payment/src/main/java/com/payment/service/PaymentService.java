@@ -2,9 +2,9 @@ package com.payment.service;
 
 import com.payment.domain.Payment;
 import com.payment.domain.PaymentStatus;
-import com.payment.dto.PaymentRequestEvent;
+import com.payment.event.PaymentRequestEvent;
 import com.payment.dto.PaymentResponse;
-import com.payment.dto.PaymentResultEvent;
+import com.payment.event.PaymentResultEvent;
 import com.payment.event.PaymentResultProducer;
 import com.payment.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;

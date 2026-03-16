@@ -1,4 +1,4 @@
-package com.payment.dto;
+package com.payment.event;
 
 public record PaymentRequestEvent(Long orderId, Long memberId, int amount) {
 }

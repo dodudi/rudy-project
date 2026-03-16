@@ -1,7 +1,6 @@
 package com.payment.event;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.payment.dto.PaymentRequestEvent;
 import com.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +36,7 @@ public class PaymentRequestConsumer {
                     .block();
         } catch (Exception e) {
             log.error("결제 처리 실패: event={}", event, e);
-            throw e; // Kafka retry
+            throw e;
         }
     }
 }
