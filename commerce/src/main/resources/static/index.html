@@ -140,15 +140,7 @@
   <!-- 동시성 테스트 -->
   <div class="card">
     <h2>동시성 테스트 — 동시 주문</h2>
-    <div class="form-row">
-      <div class="form-group">
-        <label>상품</label>
-        <select id="stress-productId"></select>
-      </div>
-      <div class="form-group">
-        <label>수량 (건당)</label>
-        <input type="number" id="stress-quantity" value="1" min="1" style="min-width:80px;">
-      </div>
+    <div class="form-row" style="margin-bottom:12px;">
       <div class="form-group">
         <label>회원 ID 시작</label>
         <input type="number" id="stress-memberStart" value="1" min="1" style="min-width:100px;">
@@ -157,6 +149,10 @@
         <label>동시 요청 수</label>
         <input type="number" id="stress-count" value="5" min="1" max="100" style="min-width:100px;">
       </div>
+    </div>
+    <div id="stress-items-rows" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px;"></div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <button class="btn-outline btn-sm" onclick="addStressItemRow()">+ 상품 추가</button>
       <button class="btn-primary" onclick="runStressTest()">동시 실행</button>
     </div>
     <div id="stress-progress" style="margin-top:12px;display:none;">
@@ -412,18 +408,35 @@
   }
 
   // ── 동시성 테스트 ──────────────────────────────────────
+  function addStressItemRow() {
+    const row = document.createElement('div');
+    row.className = 'order-item-row';
+    row.innerHTML = `
+      <select>${productOptions()}</select>
+      <input type="number" min="1" value="1" placeholder="수량">
+      <button class="btn-danger btn-sm" onclick="this.parentElement.remove()">삭제</button>`;
+    document.getElementById('stress-items-rows').appendChild(row);
+  }
+
   function refreshStressProductSelect() {
-    const sel = document.getElementById('stress-productId');
-    sel.innerHTML = productOptions();
+    document.querySelectorAll('#stress-items-rows select').forEach(sel => {
+      const prev = sel.value;
+      sel.innerHTML = productOptions();
+      if (prev) sel.value = prev;
+    });
   }
 
   async function runStressTest() {
-    const productId   = Number(document.getElementById('stress-productId').value);
-    const quantity    = Number(document.getElementById('stress-quantity').value)    || 1;
     const memberStart = Number(document.getElementById('stress-memberStart').value) || 1;
     const count       = Number(document.getElementById('stress-count').value)       || 1;
 
-    if (!productId) { alert('상품을 선택해주세요.'); return; }
+    const rows = document.querySelectorAll('#stress-items-rows .order-item-row');
+    if (!rows.length) { alert('상품을 하나 이상 추가해주세요.'); return; }
+
+    const orderItems = Array.from(rows).map(row => ({
+      productId: Number(row.querySelector('select').value),
+      quantity:  Number(row.querySelector('input').value) || 1
+    }));
 
     const log      = document.getElementById('stress-log');
     const progress = document.getElementById('stress-progress');
@@ -456,7 +469,7 @@
       return fetch(`${BASE}/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ memberId, orderItems: [{ productId, quantity }] })
+        body: JSON.stringify({ memberId, orderItems })
       })
       .then(async res => {
         const data = await res.json().catch(() => ({}));
