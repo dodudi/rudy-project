@@ -4,6 +4,8 @@ import com.commerce.domain.Member;
 import com.commerce.dto.MemberCreateRequest;
 import com.commerce.dto.MemberFilterRequest;
 import com.commerce.dto.MemberResponse;
+import com.commerce.exception.DuplicateException;
+import com.commerce.exception.ErrorCode;
 import com.commerce.repository.MemberRepository;
 import com.commerce.repository.MemberSpecification;
 import lombok.RequiredArgsConstructor;
@@ -20,16 +22,16 @@ public class MemberService {
 
     @Transactional
     public MemberResponse createMember(MemberCreateRequest request) {
-        if (memberRepository.existsByUsername(request.getUsername())) {
-            throw new IllegalArgumentException("생성할 수 없는 아이디 입니다");
+        if (memberRepository.existsByUsername(request.username())) {
+            throw new DuplicateException(ErrorCode.DUPLICATE_USERNAME);
         }
 
-        Member member = Member.builder()
-                .username(request.getUsername())
-                .nickname(request.getNickname())
-                .build();
+        Member member = memberRepository.save(Member.builder()
+                .username(request.username())
+                .password(request.password())
+                .nickname(request.nickname())
+                .build());
 
-        member = memberRepository.save(member);
         return MemberResponse.from(member);
     }
 
