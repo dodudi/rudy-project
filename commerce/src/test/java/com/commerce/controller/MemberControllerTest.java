@@ -2,6 +2,7 @@ package com.commerce.controller;
 
 import com.commerce.dto.MemberCreateRequest;
 import com.commerce.dto.MemberResponse;
+import com.commerce.dto.MemberUpdateRequest;
 import com.commerce.exception.DuplicateException;
 import com.commerce.exception.ErrorCode;
 import com.commerce.service.MemberService;
@@ -14,8 +15,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -171,5 +174,55 @@ class MemberControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request2)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void 닉네임수정_성공() throws Exception {
+        // given
+        Long memberId = 1L;
+        MemberUpdateRequest request = new MemberUpdateRequest("asdfawekfljawek");
+        MemberResponse response = new MemberResponse(memberId, "aweraaaa", "asdfawekfljawek");
+        given(memberService.updateMember(eq(memberId), any())).willReturn(response);
+
+        // when & then
+        mockMvc.perform(put("/members/{id}", memberId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(memberId))
+                .andExpect(jsonPath("$.nickname").value("asdfawekfljawek"));
+    }
+
+    @Test
+    void 닉네임수정_유효성_검증실패() throws Exception {
+        // given
+        Long memberId = 1L;
+        MemberUpdateRequest request = new MemberUpdateRequest("asdfawekfljawekasdfasdfsadfasdfasdfafs");
+        MemberUpdateRequest request2 = new MemberUpdateRequest("");
+        MemberUpdateRequest request3 = new MemberUpdateRequest("asdfawekflja");
+
+        MemberResponse response = new MemberResponse(memberId, "aweraaaa", "asdfawekflja");
+        given(memberService.updateMember(eq(memberId), any())).willReturn(response);
+        given(memberService.updateMember(eq(3333L), any())).willThrow(new DuplicateException(ErrorCode.NOTFOUND_USER));
+
+        // when & then
+        mockMvc.perform(put("/members/{id}", memberId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+
+        // when & then
+        mockMvc.perform(put("/members/{id}", memberId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request2)))
+                .andExpect(status().isBadRequest());
+
+        // when & then
+        mockMvc.perform(put("/members/{id}", 3333L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request3)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("USER_002"))
+                .andExpect(jsonPath("$.message").value("존재하지 않는 사용자입니다"));
     }
 }

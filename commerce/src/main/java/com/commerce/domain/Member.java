@@ -52,4 +52,11 @@ public class Member {
         this.password = password;
         this.nickname = nickname;
     }
+
+    public void update(String nickname) {
+        Assert.hasText(nickname, "닉네임은 필수입니다");
+        Assert.isTrue(nickname.length() <= 20, "닉네임이 너무 깁니다");
+        
+        this.nickname = nickname;
+    }
 }
