@@ -1,20 +1,9 @@
 package com.commerce.dto;
 
 import com.commerce.domain.Product;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
-@Getter
-@RequiredArgsConstructor
-public class ProductCreateResponse {
-
-    private final Long id;
-    private final String name;
-    private final String description;
-    private final int price;
-    private final int stock;
-
+public record ProductCreateResponse(Long id, String nickname, String name, String description, int price, int stock) {
     public static ProductCreateResponse from(Product product) {
-        return new ProductCreateResponse(product.getId(), product.getName(), product.getDescription(), product.getPrice(), product.getStock());
+        return new ProductCreateResponse(product.getId(), product.getMember().getNickname(), product.getName(), product.getDescription(), product.getPrice(), product.getStock());
     }
 }
