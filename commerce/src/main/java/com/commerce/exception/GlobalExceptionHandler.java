@@ -1,6 +1,7 @@
 package com.commerce.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -20,6 +21,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         String errorMessage = e.getBindingResult().getAllErrors().getFirst().getDefaultMessage();
         return ResponseEntity.status(400).body(new ErrorResponse("BAD_REQUEST", errorMessage, Instant.now()));
+    }
+
+    @ExceptionHandler(InvalidDataAccessApiUsageException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidDataAccessApiUsageException(InvalidDataAccessApiUsageException e) {
+        return ResponseEntity.status(400).body(new ErrorResponse("BAD_REQUEST", e.getMessage(), Instant.now()));
     }
 
     @ExceptionHandler(Exception.class)
