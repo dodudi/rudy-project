@@ -2,16 +2,15 @@ package com.commerce.service;
 
 import com.commerce.domain.Member;
 import com.commerce.dto.MemberCreateRequest;
-import com.commerce.dto.MemberFilterRequest;
 import com.commerce.dto.MemberResponse;
+import com.commerce.dto.MemberUpdateRequest;
 import com.commerce.exception.DuplicateException;
+import com.commerce.exception.NotFoundException;
 import com.commerce.repository.MemberRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.util.List;
 
 @SpringBootTest
 class MemberServiceTest {
@@ -128,48 +127,52 @@ class MemberServiceTest {
     }
 
     @Test
-    void 회원이름_필터링_성공() {
+    void 닉네임_수정_성공() {
         // given
-        String username = "test";
-        String nickname = "test nickname";
-        String password = "@testpassword123";
-
-        memberRepository.save(Member.builder()
-                .username(username)
-                .password(password)
-                .nickname(nickname)
+        Member oldMember = memberRepository.save(Member.builder()
+                .username("test")
+                .password("@testpassword123")
+                .nickname("testnickname")
                 .build());
 
-        MemberFilterRequest filter = new MemberFilterRequest(username, nickname);
+        String nickname = "update test nickname";
+        MemberUpdateRequest updateRequest = new MemberUpdateRequest(nickname);
 
         // when
-        List<MemberResponse> members = memberService.getMembers(filter);
+        MemberResponse memberResponse = memberService.updateMember(oldMember.getId(), updateRequest);
 
         // then
-        Assertions.assertThat(members).hasSize(1);
-        Assertions.assertThat(members.getFirst().getUsername()).isEqualTo(username);
-        Assertions.assertThat(members.getFirst().getNickname()).isEqualTo(nickname);
+        Assertions.assertThat(memberResponse.getNickname()).isEqualTo(updateRequest.nickname());
     }
 
     @Test
-    void 회원_없는값_필터링_성공() {
+    void 닉네임수정_유효성_에러발생() {
         // given
-        String username = "test";
-        String nickname = "test nickname";
-        String password = "@testpassword123";
-
-        memberRepository.save(Member.builder()
-                .username(username)
-                .password(password)
-                .nickname(nickname)
+        Member oldMember = memberRepository.save(Member.builder()
+                .username("test")
+                .password("@testpassword123")
+                .nickname("testnickname")
                 .build());
 
-        MemberFilterRequest filter = new MemberFilterRequest(username + "1", nickname + "1");
+        String nickname = "";
+        MemberUpdateRequest updateRequest = new MemberUpdateRequest(nickname);
 
-        // when
-        List<MemberResponse> members = memberService.getMembers(filter);
+        String nickname2 = "asdfawekfljaweklfjawlkefjklaweflkjlk";
+        MemberUpdateRequest updateRequest2 = new MemberUpdateRequest(nickname2);
 
-        // then
-        Assertions.assertThat(members).hasSize(0);
+        // when & then
+        Assertions.assertThatThrownBy(() -> memberService.updateMember(oldMember.getId(), updateRequest))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("닉네임은 필수입니다");
+
+        // when & then
+        Assertions.assertThatThrownBy(() -> memberService.updateMember(oldMember.getId(), updateRequest2))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("닉네임이 너무 깁니다");
+
+        // when & then
+        Assertions.assertThatThrownBy(() -> memberService.updateMember(333L, updateRequest2))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("존재하지 않는 사용자입니다");
     }
 }

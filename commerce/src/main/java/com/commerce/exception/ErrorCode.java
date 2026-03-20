@@ -5,7 +5,8 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum ErrorCode {
-    DUPLICATE_USERNAME(HttpStatus.CONFLICT, "USER_001", "이미 사용 중인 아이디입니다");
+    DUPLICATE_USERNAME(HttpStatus.CONFLICT, "USER_001", "이미 사용 중인 아이디입니다"),
+    NOTFOUND_USER(HttpStatus.BAD_REQUEST, "USER_002", "존재하지 않는 사용자입니다");
 
     private final HttpStatus status;
     private final String code;

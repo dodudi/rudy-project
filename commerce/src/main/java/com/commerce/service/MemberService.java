@@ -4,8 +4,10 @@ import com.commerce.domain.Member;
 import com.commerce.dto.MemberCreateRequest;
 import com.commerce.dto.MemberFilterRequest;
 import com.commerce.dto.MemberResponse;
+import com.commerce.dto.MemberUpdateRequest;
 import com.commerce.exception.DuplicateException;
 import com.commerce.exception.ErrorCode;
+import com.commerce.exception.NotFoundException;
 import com.commerce.repository.MemberRepository;
 import com.commerce.repository.MemberSpecification;
 import lombok.RequiredArgsConstructor;
@@ -39,5 +41,14 @@ public class MemberService {
         return memberRepository.findAll(MemberSpecification.withFilters(filter)).stream()
                 .map(MemberResponse::from)
                 .toList();
+    }
+
+    @Transactional
+    public MemberResponse updateMember(Long id, MemberUpdateRequest request) {
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.NOTFOUND_USER));
+
+        member.update(request.nickname());
+        return MemberResponse.from(member);
     }
 }
