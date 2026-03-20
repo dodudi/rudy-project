@@ -19,7 +19,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        return ResponseEntity.status(400).body(new ErrorResponse("BAD_REQUEST", e.getMessage(), Instant.now()));
+        String errorMessage = e.getBindingResult().getAllErrors().getFirst().getDefaultMessage();
+        return ResponseEntity.status(400).body(new ErrorResponse("BAD_REQUEST", errorMessage, Instant.now()));
     }
 
     @ExceptionHandler(InvalidDataAccessApiUsageException.class)
