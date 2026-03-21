@@ -15,6 +15,7 @@ services:
     container_name: postgresql
     ports:
       - "5432:5432"
+    command: postgres -c lock_timeout=5000
     environment:
       POSTGRES_USER: test
       POSTGRES_PASSWORD: test1234

@@ -3,7 +3,7 @@ spring:
     name: commerce
 
   datasource:
-    url: jdbc:h2:mem:commercedb
+    url: jdbc:h2:mem:commercedb;LOCK_TIMEOUT=1000
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -11,10 +11,10 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
 
   kafka:
     bootstrap-servers: localhost:9094
@@ -28,7 +28,7 @@ spring:
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
     listener:
       auto-startup: false
-      
+
 server:
   port: 8081
 

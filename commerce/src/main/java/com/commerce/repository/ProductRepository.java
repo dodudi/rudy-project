@@ -16,7 +16,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     boolean existsByName(String name);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @QueryHints(@QueryHint(name = "jakarta.persistence.lock.timeout", value = "5000"))
     @Query("SELECT p FROM Product p WHERE p.id IN :ids ORDER BY p.id ASC")
     List<Product> findAllWithLockByIds(@Param("ids") List<Long> ids);
 }
