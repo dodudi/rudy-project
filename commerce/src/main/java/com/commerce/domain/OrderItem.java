@@ -1,11 +1,13 @@
 package com.commerce.domain;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.util.Assert;
 
 import java.time.Instant;
 
@@ -42,13 +44,17 @@ public class OrderItem {
     @LastModifiedDate
     private Instant updatedAt;
 
-    public static OrderItem create(Order order, Product product, int quantity) {
-        OrderItem item = new OrderItem();
-        item.order = order;
-        item.product = product;
-        item.price = product.getPrice();
-        item.quantity = quantity;
-        item.amount = item.price * item.quantity;
-        return item;
+    @Builder
+    private OrderItem(Order order, Product product, int price, int quantity) {
+        Assert.notNull(order, "주문 정보는 필수 값입니다.");
+        Assert.notNull(product, "상품 정보는 필수 값입니다.");
+        Assert.isTrue(price >= 0, "상품 가격은 0원 이상이어야 합니다.");
+        Assert.isTrue(quantity >= 1, "상품 구매 수량은 1개 이상이어야 합니다.");
+
+        this.order = order;
+        this.product = product;
+        this.price = price;
+        this.quantity = quantity;
+        this.amount = this.price * this.quantity;
     }
 }

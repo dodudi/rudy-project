@@ -57,7 +57,7 @@ class PaymentResultConsumerTest {
                 .stock(100)
                 .build());
 
-        order = Order.create(member);
+        order = Order.builder().member(member).build();
         order.addOrderItem(product, 1);
         order = orderRepository.save(order);
     }

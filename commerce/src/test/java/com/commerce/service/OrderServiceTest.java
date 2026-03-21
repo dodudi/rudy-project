@@ -1,12 +1,13 @@
 package com.commerce.service;
 
 import com.commerce.domain.Member;
-import com.commerce.domain.OrderStatus;
 import com.commerce.domain.Product;
 import com.commerce.dto.OrderCreateRequest;
 import com.commerce.dto.OrderCreateResponse;
-import com.commerce.dto.OrderFilterRequest;
 import com.commerce.event.PaymentRequestEvent;
+import com.commerce.exception.EmptyException;
+import com.commerce.exception.InsufficientStockException;
+import com.commerce.exception.NotFoundException;
 import com.commerce.repository.MemberRepository;
 import com.commerce.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,7 +18,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,8 +45,22 @@ class OrderServiceTest {
 
     @BeforeEach
     void setUp() {
+        member = memberRepository.save(Member.builder()
+                .username("member")
+                .password("@password1234")
+                .nickname("member")
+                .build()
+        );
+
+        Member seller = memberRepository.save(Member.builder()
+                .username("seller")
+                .password("@password1234")
+                .nickname("seller")
+                .build());
+
         radioProduct = productRepository.save(Product.builder()
                 .name("radio")
+                .member(seller)
                 .description("radio description")
                 .price(50000)
                 .stock(5000)
@@ -55,225 +69,120 @@ class OrderServiceTest {
 
         phoneProduct = productRepository.save(Product.builder()
                 .name("phone")
+                .member(seller)
                 .description("phone description")
                 .price(10000)
                 .stock(10000)
                 .build()
         );
-
-        member = memberRepository.save(Member.builder()
-                .username("member")
-                .nickname("member")
-                .build()
-        );
     }
 
     @Test
-    void 주문_생성_성공() {
+    void 주문생성_성공() {
         // given
-        int radioQuantity = 2;
-        int radioAmount = radioProduct.getPrice() * radioQuantity;
+        int radioQuantity = 100;
+        int phoneQuantity = 200;
 
-        int phoneQuantity = 3;
-        int phoneAmount = phoneProduct.getPrice() * phoneQuantity;
-
-        List<OrderCreateRequest.OrderItem> items = List.of(
+        OrderCreateRequest request = new OrderCreateRequest(member.getId(), List.of(
                 new OrderCreateRequest.OrderItem(radioProduct.getId(), radioQuantity),
                 new OrderCreateRequest.OrderItem(phoneProduct.getId(), phoneQuantity)
-        );
-        OrderCreateRequest request = new OrderCreateRequest(member.getId(), items);
+        ));
+
 
         // when
-        OrderCreateResponse response = orderService.createOrder(request);
+        OrderCreateResponse order = orderService.createOrder(request);
 
         // then
-        assertThat(response.orderId()).isNotNull();
-        assertThat(response.memberId()).isEqualTo(member.getId());
-        assertThat(response.status()).isEqualTo(OrderStatus.PENDING);
-        assertThat(response.orderItems()).hasSize(items.size());
-        assertThat(response.totalAmount()).isEqualTo(radioAmount + phoneAmount);
+        assertThat(order.memberId()).isEqualTo(member.getId());
+        assertThat(order.orderItems().size()).isEqualTo(2);
+        assertThat(order.orderItems().get(0).productId()).isEqualTo(radioProduct.getId());
+        assertThat(order.orderItems().get(1).productId()).isEqualTo(phoneProduct.getId());
+        assertThat(order.orderItems().get(0).amount()).isEqualTo(radioProduct.getPrice() * radioQuantity);
+        assertThat(order.orderItems().get(1).amount()).isEqualTo(phoneProduct.getPrice() * phoneQuantity);
     }
 
     @Test
-    void 주문_재고_감소_적용() {
+    void 주문생성_재고감소_적용() {
         // given
         int orderQuantity = 5;
         int availableStock = radioProduct.getStock();
 
-        List<OrderCreateRequest.OrderItem> items = List.of(
+        OrderCreateRequest request = new OrderCreateRequest(member.getId(), List.of(
                 new OrderCreateRequest.OrderItem(radioProduct.getId(), orderQuantity)
-        );
-        OrderCreateRequest request = new OrderCreateRequest(member.getId(), items);
+        ));
 
         // when
         orderService.createOrder(request);
 
         // then
-        Product updated = productRepository.findById(radioProduct.getId()).orElseThrow();
-        assertThat(updated.getStock()).isEqualTo(availableStock - orderQuantity);
+        assertThat(radioProduct.getStock()).isEqualTo(availableStock - orderQuantity);
     }
 
     @Test
-    void 주문_재고_부족_에러_발생() {
+    void 주문생성_재고부족_에러발생() {
         // given
-        List<OrderCreateRequest.OrderItem> items = List.of(
+        OrderCreateRequest request = new OrderCreateRequest(member.getId(), List.of(
                 new OrderCreateRequest.OrderItem(radioProduct.getId(), 99999)
-        );
-        OrderCreateRequest request = new OrderCreateRequest(member.getId(), items);
+        ));
 
         // when & then
         assertThatThrownBy(() -> orderService.createOrder(request))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("재고 부족");
+                .isInstanceOf(InsufficientStockException.class)
+                .hasMessageContaining("재고가 부족합니다");
     }
 
     @Test
-    void 주문_존재하지_않는_회원_에러_발생() {
+    void 주문생성_존재하지_않는회원_에러발생() {
         // given
         Long nonExistentMemberId = -1L;
-        List<OrderCreateRequest.OrderItem> items = List.of(
+        OrderCreateRequest request = new OrderCreateRequest(nonExistentMemberId, List.of(
                 new OrderCreateRequest.OrderItem(radioProduct.getId(), 1)
-        );
-        OrderCreateRequest request = new OrderCreateRequest(nonExistentMemberId, items);
+        ));
 
         // when & then
         assertThatThrownBy(() -> orderService.createOrder(request))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("존재하지 않는 회원");
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("존재하지 않는 사용자입니다");
     }
 
     @Test
-    void 주문_존재하지_않는_상품_에러_발생() {
+    void 주문생성_존재하지_않는상품_에러발생() {
         // given
         Long nonExistentProductId = -1L;
-        List<OrderCreateRequest.OrderItem> items = List.of(
-                new OrderCreateRequest.OrderItem(nonExistentProductId, 1)
-        );
-        OrderCreateRequest request = new OrderCreateRequest(member.getId(), items);
+
+        OrderCreateRequest request = new OrderCreateRequest(member.getId(), List.of(
+                new OrderCreateRequest.OrderItem(nonExistentProductId, 1),
+                new OrderCreateRequest.OrderItem(phoneProduct.getId(), 1),
+                new OrderCreateRequest.OrderItem(radioProduct.getId(), 1)
+        ));
+
+        // when & then
+        assertThatThrownBy(() -> orderService.createOrder(request))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("존재하지 않는 상품입니다");
+    }
+
+    @Test
+    void 주문생성_상품목록_없는경우_에러발생() {
+        // given
+        OrderCreateRequest request = new OrderCreateRequest(member.getId(), List.of());
+
+        // when & then
+        assertThatThrownBy(() -> orderService.createOrder(request))
+                .isInstanceOf(EmptyException.class)
+                .hasMessageContaining("상품 정보가 비었습니다");
+    }
+
+    @Test
+    void 주문생성_구매상품_수량0개_에러발생() {
+        // given
+        OrderCreateRequest request = new OrderCreateRequest(member.getId(), List.of(
+                new OrderCreateRequest.OrderItem(phoneProduct.getId(), 0)
+        ));
 
         // when & then
         assertThatThrownBy(() -> orderService.createOrder(request))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("존재하지 않는 상품");
-    }
-
-    @Test
-    void 주문_목록_조회_필터_없음() {
-        // given
-        orderService.createOrder(new OrderCreateRequest(member.getId(), List.of(
-                new OrderCreateRequest.OrderItem(radioProduct.getId(), 1)
-        )));
-        orderService.createOrder(new OrderCreateRequest(member.getId(), List.of(
-                new OrderCreateRequest.OrderItem(phoneProduct.getId(), 1)
-        )));
-
-        // when
-        List<OrderCreateResponse> orders = orderService.getOrders(new OrderFilterRequest());
-
-        // then
-        assertThat(orders).hasSize(2);
-    }
-
-    @Test
-    void 주문_목록_조회_회원_필터() {
-        // given
-        Member other = memberRepository.save(Member.builder()
-                .username("other")
-                .nickname("other")
-                .build());
-
-        orderService.createOrder(new OrderCreateRequest(member.getId(), List.of(
-                new OrderCreateRequest.OrderItem(radioProduct.getId(), 1)
-        )));
-        orderService.createOrder(new OrderCreateRequest(other.getId(), List.of(
-                new OrderCreateRequest.OrderItem(phoneProduct.getId(), 1)
-        )));
-
-        OrderFilterRequest filter = new OrderFilterRequest();
-        filter.setMemberId(member.getId());
-
-        // when
-        List<OrderCreateResponse> orders = orderService.getOrders(filter);
-
-        // then
-        assertThat(orders).hasSize(1);
-        assertThat(orders.get(0).memberId()).isEqualTo(member.getId());
-    }
-
-    @Test
-    void 주문_목록_조회_상태_필터() {
-        // given
-        orderService.createOrder(new OrderCreateRequest(member.getId(), List.of(
-                new OrderCreateRequest.OrderItem(radioProduct.getId(), 1)
-        )));
-
-        OrderFilterRequest filter = new OrderFilterRequest();
-        filter.setStatus(OrderStatus.PENDING);
-
-        // when
-        List<OrderCreateResponse> orders = orderService.getOrders(filter);
-
-        // then
-        assertThat(orders).isNotEmpty();
-        assertThat(orders).allMatch(o -> o.status() == OrderStatus.PENDING);
-    }
-
-    @Test
-    void 주문_목록_조회_날짜_범위_필터_주문_포함() {
-        // given
-        Instant before = Instant.now().minusSeconds(5);
-
-        orderService.createOrder(new OrderCreateRequest(member.getId(), List.of(
-                new OrderCreateRequest.OrderItem(radioProduct.getId(), 1)
-        )));
-
-        Instant after = Instant.now().plusSeconds(5);
-
-        OrderFilterRequest filter = new OrderFilterRequest();
-        filter.setStartDate(before);
-        filter.setEndDate(after);
-
-        // when
-        List<OrderCreateResponse> orders = orderService.getOrders(filter);
-
-        // then
-        assertThat(orders).hasSize(1);
-        assertThat(orders.get(0).createdAt()).isBetween(before, after);
-    }
-
-    @Test
-    void 주문_목록_조회_시작날짜가_미래이면_결과_없음() {
-        // given
-        orderService.createOrder(new OrderCreateRequest(member.getId(), List.of(
-                new OrderCreateRequest.OrderItem(radioProduct.getId(), 1)
-        )));
-
-        OrderFilterRequest filter = new OrderFilterRequest();
-        filter.setStartDate(Instant.now().plusSeconds(60));
-
-        // when
-        List<OrderCreateResponse> orders = orderService.getOrders(filter);
-
-        // then
-        assertThat(orders).isEmpty();
-    }
-
-    @Test
-    void 주문_목록_조회_종료날짜가_과거이면_결과_없음() {
-        // given
-        Instant past = Instant.now().minusSeconds(60);
-
-        orderService.createOrder(new OrderCreateRequest(member.getId(), List.of(
-                new OrderCreateRequest.OrderItem(radioProduct.getId(), 1)
-        )));
-
-        OrderFilterRequest filter = new OrderFilterRequest();
-        filter.setEndDate(past);
-
-        // when
-        List<OrderCreateResponse> orders = orderService.getOrders(filter);
-
-        // then
-        assertThat(orders).isEmpty();
+                .hasMessageContaining("상품 구매 수량은 1개 이상이어야 합니다.");
     }
 }

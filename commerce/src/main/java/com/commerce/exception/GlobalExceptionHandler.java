@@ -12,8 +12,8 @@ import java.time.Instant;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(DuplicateException.class)
-    public ResponseEntity<ErrorResponse> handleDuplicateException(DuplicateException e) {
+    @ExceptionHandler(CommerceException.class)
+    public ResponseEntity<ErrorResponse> handleCommerceException(CommerceException e) {
         return ResponseEntity.status(e.getStatus()).body(new ErrorResponse(e.getCode(), e.getMessage(), Instant.now()));
     }
 
