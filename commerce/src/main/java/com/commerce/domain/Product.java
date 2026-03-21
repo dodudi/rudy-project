@@ -1,5 +1,7 @@
 package com.commerce.domain;
 
+import com.commerce.exception.ErrorCode;
+import com.commerce.exception.InsufficientStockException;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -65,7 +67,7 @@ public class Product {
 
     public void decreaseStock(int quantity) {
         if (this.stock < quantity) {
-            throw new IllegalStateException("재고 부족: " + this.name);
+            throw new InsufficientStockException(ErrorCode.INSUFFICIENT_STOCK);
         }
         this.stock -= quantity;
     }

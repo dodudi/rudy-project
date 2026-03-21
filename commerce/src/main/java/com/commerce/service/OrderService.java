@@ -1,15 +1,17 @@
 package com.commerce.service;
 
-import com.commerce.domain.*;
+import com.commerce.domain.Member;
+import com.commerce.domain.Order;
+import com.commerce.domain.Outbox;
+import com.commerce.domain.Product;
 import com.commerce.dto.OrderCreateRequest;
 import com.commerce.dto.OrderCreateResponse;
 import com.commerce.dto.OrderFilterRequest;
 import com.commerce.event.PaymentRequestEvent;
-import com.commerce.repository.OrderSpecification;
-import com.commerce.repository.MemberRepository;
-import com.commerce.repository.OrderRepository;
-import com.commerce.repository.OutboxRepository;
-import com.commerce.repository.ProductRepository;
+import com.commerce.exception.EmptyException;
+import com.commerce.exception.ErrorCode;
+import com.commerce.exception.NotFoundException;
+import com.commerce.repository.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +21,10 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +36,8 @@ public class OrderService {
     private final OutboxRepository outboxRepository;
     private final ObjectMapper objectMapper;
 
+    private static final String PAYMENT_REQUEST_TOPIC = "payment.request";
+
     @Retryable(
             retryFor = PessimisticLockingFailureException.class,
             maxAttempts = 3,
@@ -39,34 +45,42 @@ public class OrderService {
     )
     @Transactional
     public OrderCreateResponse createOrder(OrderCreateRequest request) {
+        if (request.orderItems().isEmpty()) {
+            throw new EmptyException(ErrorCode.EMPTY_PRODUCT);
+        }
+
         Member member = memberRepository.findById(request.memberId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원"));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.NOTFOUND_USER));
 
-        Order order = Order.create(member);
+        Order order = Order.builder().member(member).build();
 
-        List<OrderCreateRequest.OrderItem> sortedItems = request.orderItems().stream()
-                .sorted(Comparator.comparingLong(OrderCreateRequest.OrderItem::productId))
+        // 상품 아이디 오름차순 정렬
+        List<Long> productIds = request.orderItems().stream()
+                .map(OrderCreateRequest.OrderItem::productId)
                 .toList();
 
-        for (OrderCreateRequest.OrderItem item : sortedItems) {
-            Product product = productRepository.findWithLockById(item.productId())
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품"));
+        // 상품 목록 Lock 조회 후 ID 별 매핑 처리
+        Map<Long, Product> productMap = productRepository.findAllWithLockByIds(productIds).stream()
+                .collect(Collectors.toMap(Product::getId, product -> product));
 
+        // 재고 차감 처리
+        for (OrderCreateRequest.OrderItem item : request.orderItems()) {
+            Product product = Optional.ofNullable(productMap.get(item.productId()))
+                    .orElseThrow(() -> new NotFoundException(ErrorCode.NOTFOUND_PRODUCT));
             product.decreaseStock(item.quantity());
             order.addOrderItem(product, item.quantity());
         }
 
-        Order save = orderRepository.save(order);
-        int totalAmount = save.getOrderItems().stream()
-                .mapToInt(OrderItem::getAmount)
-                .sum();
+        Order saved = orderRepository.save(order);
+        publishPaymentRequest(saved);
+        return OrderCreateResponse.from(saved);
+    }
 
+    private void publishPaymentRequest(Order order) {
         outboxRepository.save(Outbox.create(
-                "payment.request",
-                serialize(new PaymentRequestEvent(save.getId(), member.getId(), totalAmount))
+                PAYMENT_REQUEST_TOPIC,
+                serialize(new PaymentRequestEvent(order.getId(), order.getMember().getId(), order.getTotalAmount()))
         ));
-
-        return OrderCreateResponse.from(save);
     }
 
     private String serialize(Object obj) {
