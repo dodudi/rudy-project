@@ -2,6 +2,7 @@ package com.commerce.service;
 
 import com.commerce.domain.Member;
 import com.commerce.dto.MemberCreateRequest;
+import com.commerce.dto.MemberFilterRequest;
 import com.commerce.dto.MemberResponse;
 import com.commerce.dto.MemberUpdateRequest;
 import com.commerce.exception.DuplicateException;
@@ -11,7 +12,11 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
+@Transactional
 @SpringBootTest
 class MemberServiceTest {
 
@@ -174,5 +179,104 @@ class MemberServiceTest {
         Assertions.assertThatThrownBy(() -> memberService.updateMember(333L, updateRequest2))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("존재하지 않는 사용자입니다");
+    }
+
+    @Test
+    void 회원조회_성공() {
+        // given
+        Member member = memberRepository.save(Member.builder()
+                .username("test")
+                .password("@testpassword123")
+                .nickname("testnickname")
+                .build());
+
+        MemberFilterRequest request = new MemberFilterRequest(null, null);
+
+        // when
+        List<MemberResponse> members = memberService.getMembers(request);
+
+        // then
+        Assertions.assertThat(members).hasSize(1);
+        Assertions.assertThat(members.getFirst().getId()).isEqualTo(member.getId());
+        Assertions.assertThat(members.getFirst().getUsername()).isEqualTo(member.getUsername());
+        Assertions.assertThat(members.getFirst().getNickname()).isEqualTo(member.getNickname());
+    }
+
+    @Test
+    void 회원조회_이름필터_성공() {
+        // given
+        Member member = memberRepository.save(Member.builder()
+                .username("test")
+                .password("@testpassword123")
+                .nickname("testnickname")
+                .build());
+
+        MemberFilterRequest request = new MemberFilterRequest("test", null);
+
+        // when
+        List<MemberResponse> members = memberService.getMembers(request);
+
+        // then
+        Assertions.assertThat(members).hasSize(1);
+        Assertions.assertThat(members.getFirst().getId()).isEqualTo(member.getId());
+        Assertions.assertThat(members.getFirst().getUsername()).isEqualTo(member.getUsername());
+        Assertions.assertThat(members.getFirst().getNickname()).isEqualTo(member.getNickname());
+    }
+
+    @Test
+    void 회원조회_없는이름_필터성공() {
+        // given
+        memberRepository.save(Member.builder()
+                .username("test")
+                .password("@testpassword123")
+                .nickname("testnickname")
+                .build());
+
+        MemberFilterRequest request = new MemberFilterRequest("teawtawet", null);
+
+        // when
+        List<MemberResponse> members = memberService.getMembers(request);
+
+        // then
+        Assertions.assertThat(members).hasSize(0);
+    }
+
+    @Test
+    void 회원조회_닉네임필터_성공() {
+        // given
+        Member member = memberRepository.save(Member.builder()
+                .username("test")
+                .password("@testpassword123")
+                .nickname("testnickname")
+                .build());
+
+        MemberFilterRequest request = new MemberFilterRequest(null, "testnickname");
+
+        // when
+        List<MemberResponse> members = memberService.getMembers(request);
+
+        // then
+        Assertions.assertThat(members).hasSize(1);
+        Assertions.assertThat(members.getFirst().getId()).isEqualTo(member.getId());
+        Assertions.assertThat(members.getFirst().getUsername()).isEqualTo(member.getUsername());
+        Assertions.assertThat(members.getFirst().getNickname()).isEqualTo(member.getNickname());
+    }
+
+    @Test
+    void 회원조회_없는닉네임_필터성공() {
+        // given
+        memberRepository.save(Member.builder()
+                .username("test")
+                .password("@testpassword123")
+                .nickname("testnickname")
+                .build());
+
+        MemberFilterRequest request = new MemberFilterRequest(null, "akakak");
+
+        // when
+        List<MemberResponse> members = memberService.getMembers(request);
+
+        // then
+        Assertions.assertThat(members).hasSize(0);
     }
 }
