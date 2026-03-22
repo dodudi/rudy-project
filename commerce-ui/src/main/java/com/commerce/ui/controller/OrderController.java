@@ -1,0 +1,58 @@
+package com.commerce.ui.controller;
+
+import com.commerce.ui.client.OrderClient;
+import com.commerce.ui.dto.OrderItemRequest;
+import com.commerce.ui.dto.OrderRequest;
+import com.commerce.ui.dto.OrderResponse;
+import jakarta.validation.Valid;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+@Controller
+@RequestMapping("/orders")
+public class OrderController {
+
+    private final OrderClient orderClient;
+
+    public OrderController(OrderClient orderClient) {
+        this.orderClient = orderClient;
+    }
+
+    @GetMapping("/new")
+    public String orderForm(Model model) {
+        OrderRequest orderRequest = new OrderRequest();
+        orderRequest.getOrderItems().add(new OrderItemRequest());
+        model.addAttribute("orderRequest", orderRequest);
+        return "order/form";
+    }
+
+    @PostMapping
+    public String createOrder(@Valid @ModelAttribute OrderRequest orderRequest,
+                              BindingResult bindingResult,
+                              Model model,
+                              RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            return "order/form";
+        }
+
+        try {
+            OrderResponse response = orderClient.createOrder(orderRequest);
+            redirectAttributes.addFlashAttribute("order", response);
+            return "redirect:/orders/success";
+        } catch (Exception e) {
+            model.addAttribute("error", "주문 처리 중 오류가 발생했습니다: " + e.getMessage());
+            return "order/form";
+        }
+    }
+
+    @GetMapping("/success")
+    public String success() {
+        return "order/success";
+    }
+}
