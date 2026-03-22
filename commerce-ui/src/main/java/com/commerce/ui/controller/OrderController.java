@@ -59,7 +59,7 @@ public class OrderController {
         try {
             OrderResponse response = orderClient.createOrder(orderRequest);
             redirectAttributes.addFlashAttribute("order", response);
-            return "redirect:/orders/success";
+            return "redirect:/payment/checkout";
         } catch (Exception e) {
             model.addAttribute("error", "주문 처리 중 오류가 발생했습니다: " + e.getMessage());
             model.addAttribute("members", memberClient.getMembers());

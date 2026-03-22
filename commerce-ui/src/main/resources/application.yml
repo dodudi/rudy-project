@@ -9,3 +9,7 @@ commerce:
   api:
     url: http://localhost:8080
     prefix: /api/commerce
+
+toss:
+  client-key: ${CLIENT_KEY}
+  secret-key: ${SECRET_KEY}

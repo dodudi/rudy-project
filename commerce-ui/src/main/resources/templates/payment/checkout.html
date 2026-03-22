@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>결제</title>
+    <style>
+        body { font-family: sans-serif; max-width: 500px; margin: 60px auto; padding: 0 20px; }
+        h1 { font-size: 1.5rem; margin-bottom: 24px; }
+        .order-summary { border: 1px solid #eee; border-radius: 8px; padding: 20px; margin-bottom: 24px; }
+        .row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f5f5f5; }
+        .row:last-child { border-bottom: none; font-weight: bold; font-size: 1.1rem; }
+        .items { font-size: 0.9rem; color: #555; margin: 8px 0; }
+        #payment-button { width: 100%; padding: 14px; background: #4caf50; color: white; border: none; border-radius: 6px; font-size: 1rem; cursor: pointer; }
+        #payment-button:hover { background: #43a047; }
+    </style>
+</head>
+<body>
+
+<h1>결제</h1>
+
+<div class="order-summary">
+    <div class="row">
+        <span>주문 번호</span>
+        <span th:text="${order.orderId}"></span>
+    </div>
+    <div class="items">
+        <div th:each="item : ${order.orderItems}"
+             th:text="${item.productName} + ' x' + ${item.quantity}"></div>
+    </div>
+    <div class="row">
+        <span>결제 금액</span>
+        <span th:text="${#numbers.formatInteger(order.totalAmount, 0, 'COMMA')} + '원'"></span>
+    </div>
+</div>
+
+<button id="payment-button">결제하기</button>
+
+<script src="https://js.tosspayments.com/v2/standard"></script>
+<script th:inline="javascript">
+    const clientKey = [[${clientKey}]];
+    const orderId = String([[${order.orderId}]]);
+    const amount = [[${order.totalAmount}]];
+    const orderName = [[${order.orderItems[0].productName}]];
+
+    const tossPayments = TossPayments(clientKey);
+    const payment = tossPayments.payment({ customerKey: 'customer-' + orderId });
+
+    document.getElementById('payment-button').addEventListener('click', async () => {
+        await payment.requestPayment({
+            method: 'CARD',
+            amount: {
+                currency: 'KRW',
+                value: amount
+            },
+            orderId: 'order-' + orderId,
+            orderName: orderName,
+            successUrl: window.location.origin + '/payment/success',
+            failUrl: window.location.origin + '/payment/fail'
+        });
+    });
+</script>
+
+</body>
+</html>
