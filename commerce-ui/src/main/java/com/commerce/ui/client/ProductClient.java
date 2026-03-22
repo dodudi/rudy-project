@@ -20,7 +20,7 @@ public class ProductClient {
 
     public ProductCreateResponse createProduct(ProductCreateRequest request) {
         return restClient.post()
-                .uri("/api/commerce/products")
+                .uri("/products")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(request)
                 .retrieve()
@@ -29,7 +29,7 @@ public class ProductClient {
 
     public List<ProductCreateResponse> getProducts() {
         return restClient.get()
-                .uri("/api/commerce/products")
+                .uri("/products")
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
     }

@@ -8,3 +8,4 @@ server:
 commerce:
   api:
     url: http://localhost:8080
+    prefix: /api/commerce

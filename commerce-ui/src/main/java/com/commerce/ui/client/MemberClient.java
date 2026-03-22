@@ -20,7 +20,7 @@ public class MemberClient {
 
     public MemberResponse createMember(MemberCreateRequest request) {
         return restClient.post()
-                .uri("/api/commerce/members")
+                .uri("/members")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(request)
                 .retrieve()
@@ -29,7 +29,7 @@ public class MemberClient {
 
     public List<MemberResponse> getMembers() {
         return restClient.get()
-                .uri("/api/commerce/members")
+                .uri("/members")
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
     }

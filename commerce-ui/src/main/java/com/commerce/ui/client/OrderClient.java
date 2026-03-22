@@ -20,7 +20,7 @@ public class OrderClient {
 
     public OrderResponse createOrder(OrderRequest request) {
         return restClient.post()
-                .uri("/api/commerce/orders")
+                .uri("/orders")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(request)
                 .retrieve()
@@ -29,7 +29,7 @@ public class OrderClient {
 
     public List<OrderResponse> getOrders() {
         return restClient.get()
-                .uri("/api/commerce/orders")
+                .uri("/orders")
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
     }

@@ -9,9 +9,11 @@ import org.springframework.web.client.RestClient;
 public class RestClientConfig {
 
     @Bean
-    public RestClient commerceRestClient(@Value("${commerce.api.url}") String baseUrl) {
+    public RestClient commerceRestClient(
+            @Value("${commerce.api.url}") String baseUrl,
+            @Value("${commerce.api.prefix}") String prefix) {
         return RestClient.builder()
-                .baseUrl(baseUrl)
+                .baseUrl(baseUrl + prefix)
                 .build();
     }
 }
