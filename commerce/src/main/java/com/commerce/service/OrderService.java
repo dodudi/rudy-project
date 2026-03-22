@@ -2,17 +2,14 @@ package com.commerce.service;
 
 import com.commerce.domain.Member;
 import com.commerce.domain.Order;
-import com.commerce.domain.Outbox;
 import com.commerce.domain.Product;
 import com.commerce.dto.OrderCreateRequest;
 import com.commerce.dto.OrderCreateResponse;
 import com.commerce.dto.OrderFilterRequest;
-import com.commerce.event.PaymentRequestEvent;
 import com.commerce.exception.EmptyException;
 import com.commerce.exception.ErrorCode;
 import com.commerce.exception.NotFoundException;
 import com.commerce.repository.*;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.PessimisticLockingFailureException;
@@ -33,10 +30,6 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final MemberRepository memberRepository;
-    private final OutboxRepository outboxRepository;
-    private final ObjectMapper objectMapper;
-
-    private static final String PAYMENT_REQUEST_TOPIC = "payment.request";
 
     @Retryable(
             retryFor = PessimisticLockingFailureException.class,
@@ -72,23 +65,7 @@ public class OrderService {
         }
 
         Order saved = orderRepository.save(order);
-        publishPaymentRequest(saved);
         return OrderCreateResponse.from(saved);
-    }
-
-    private void publishPaymentRequest(Order order) {
-        outboxRepository.save(Outbox.create(
-                PAYMENT_REQUEST_TOPIC,
-                serialize(new PaymentRequestEvent(order.getId(), order.getMember().getId(), order.getTotalAmount()))
-        ));
-    }
-
-    private String serialize(Object obj) {
-        try {
-            return objectMapper.writeValueAsString(obj);
-        } catch (JsonProcessingException e) {
-            throw new IllegalStateException("이벤트 직렬화 실패", e);
-        }
     }
 
     @Transactional(readOnly = true)
