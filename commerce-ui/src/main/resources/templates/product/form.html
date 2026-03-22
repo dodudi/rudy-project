@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>상품 추가</title>
+    <style>
+        body { font-family: sans-serif; max-width: 480px; margin: 40px auto; padding: 0 20px; }
+        h1 { font-size: 1.5rem; margin-bottom: 24px; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-weight: bold; margin-bottom: 4px; }
+        input, textarea { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        textarea { height: 80px; resize: vertical; }
+        .error { color: red; font-size: 0.85rem; margin-top: 4px; }
+        .alert-error { background: #ffe0e0; border: 1px solid #f99; padding: 12px; border-radius: 4px; margin-bottom: 16px; }
+        .hint { font-size: 0.8rem; color: #888; margin-top: 3px; }
+        .actions { display: flex; gap: 8px; margin-top: 20px; }
+        button[type=submit] { padding: 10px 24px; background: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; }
+        a.back { padding: 10px 16px; background: #eee; border-radius: 4px; text-decoration: none; color: #333; }
+    </style>
+</head>
+<body>
+
+<h1>상품 추가</h1>
+
+<div th:if="${error}" class="alert-error" th:text="${error}"></div>
+
+<form th:action="@{/products}" th:object="${productCreateRequest}" method="post">
+
+    <div class="form-group">
+        <label>판매자 회원 ID</label>
+        <input type="number" th:field="*{memberId}" placeholder="회원 ID 입력">
+        <div class="error" th:if="${#fields.hasErrors('memberId')}" th:errors="*{memberId}"></div>
+    </div>
+
+    <div class="form-group">
+        <label>상품명</label>
+        <input type="text" th:field="*{name}" placeholder="영문, 숫자, 한글 2~20자">
+        <div class="hint">영문, 숫자, 한글만 허용 (2~20자)</div>
+        <div class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+    </div>
+
+    <div class="form-group">
+        <label>설명 (선택)</label>
+        <textarea th:field="*{description}" placeholder="상품 설명을 입력하세요 (최대 500자)"></textarea>
+        <div class="error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+    </div>
+
+    <div class="form-group">
+        <label>가격 (원)</label>
+        <input type="number" th:field="*{price}" placeholder="0 ~ 100,000,000" min="0" max="100000000">
+        <div class="error" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></div>
+    </div>
+
+    <div class="form-group">
+        <label>재고 (개)</label>
+        <input type="number" th:field="*{stock}" placeholder="0 ~ 10,000,000" min="0" max="10000000">
+        <div class="error" th:if="${#fields.hasErrors('stock')}" th:errors="*{stock}"></div>
+    </div>
+
+    <div class="actions">
+        <button type="submit">등록</button>
+        <a class="back" th:href="@{/products}">목록으로</a>
+    </div>
+
+</form>
+
+</body>
+</html>
