@@ -1,6 +1,8 @@
 package com.commerce.ui.controller;
 
+import com.commerce.ui.client.MemberClient;
 import com.commerce.ui.client.OrderClient;
+import com.commerce.ui.client.ProductClient;
 import com.commerce.ui.dto.OrderItemRequest;
 import com.commerce.ui.dto.OrderRequest;
 import com.commerce.ui.dto.OrderResponse;
@@ -19,16 +21,27 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class OrderController {
 
     private final OrderClient orderClient;
+    private final MemberClient memberClient;
+    private final ProductClient productClient;
 
-    public OrderController(OrderClient orderClient) {
+    public OrderController(OrderClient orderClient, MemberClient memberClient, ProductClient productClient) {
         this.orderClient = orderClient;
+        this.memberClient = memberClient;
+        this.productClient = productClient;
+    }
+
+    @GetMapping
+    public String list(Model model) {
+        model.addAttribute("orders", orderClient.getOrders());
+        return "order/list";
     }
 
     @GetMapping("/new")
     public String orderForm(Model model) {
         OrderRequest orderRequest = new OrderRequest();
-        orderRequest.getOrderItems().add(new OrderItemRequest());
         model.addAttribute("orderRequest", orderRequest);
+        model.addAttribute("members", memberClient.getMembers());
+        model.addAttribute("products", productClient.getProducts());
         return "order/form";
     }
 
@@ -38,6 +51,8 @@ public class OrderController {
                               Model model,
                               RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
+            model.addAttribute("members", memberClient.getMembers());
+            model.addAttribute("products", productClient.getProducts());
             return "order/form";
         }
 
@@ -47,6 +62,8 @@ public class OrderController {
             return "redirect:/orders/success";
         } catch (Exception e) {
             model.addAttribute("error", "주문 처리 중 오류가 발생했습니다: " + e.getMessage());
+            model.addAttribute("members", memberClient.getMembers());
+            model.addAttribute("products", productClient.getProducts());
             return "order/form";
         }
     }

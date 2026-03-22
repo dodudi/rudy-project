@@ -2,9 +2,12 @@ package com.commerce.ui.client;
 
 import com.commerce.ui.dto.OrderRequest;
 import com.commerce.ui.dto.OrderResponse;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+
+import java.util.List;
 
 @Component
 public class OrderClient {
@@ -22,5 +25,12 @@ public class OrderClient {
                 .body(request)
                 .retrieve()
                 .body(OrderResponse.class);
+    }
+
+    public List<OrderResponse> getOrders() {
+        return restClient.get()
+                .uri("/api/commerce/orders")
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {});
     }
 }
