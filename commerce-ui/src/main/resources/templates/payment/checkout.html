@@ -52,7 +52,7 @@
                 currency: 'KRW',
                 value: amount
             },
-            orderId: 'order-' + orderId,
+            orderId: orderId + '-' + Date.now(),
             orderName: orderName,
             successUrl: window.location.origin + '/payment/success',
             failUrl: window.location.origin + '/payment/fail'

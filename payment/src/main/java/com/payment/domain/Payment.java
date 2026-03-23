@@ -1,16 +1,18 @@
 package com.payment.domain;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.util.Assert;
 
 import java.time.Instant;
 
-@Table("payments")
 @Getter
-@Builder
-@AllArgsConstructor
+@Table("payments")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Payment {
 
@@ -19,7 +21,9 @@ public class Payment {
 
     private Long orderId;
 
-    private Long memberId;
+    private String paymentId;
+
+    private String paymentKey;
 
     private int amount;
 
@@ -28,23 +32,32 @@ public class Payment {
     @CreatedDate
     private Instant createdAt;
 
-    public static Payment create(Long orderId, Long memberId, int amount) {
-        return Payment.builder()
-                .orderId(orderId)
-                .memberId(memberId)
-                .amount(amount)
-                .status(PaymentStatus.PENDING.name())
-                .build();
+    @Builder
+    private Payment(Long orderId, String paymentKey, String paymentId, int amount) {
+        Assert.notNull(orderId, "Payment 주문ID는 필수 값입니다.");
+        Assert.notNull(paymentId, "Payment 토스주문ID는 필수 값입니다.");
+        Assert.hasText(paymentKey, "Payment 토스주문KEY는 필수 값입니다.");
+        Assert.isTrue(amount >= 0, "구매금액은 0 이상이어야 합니다.");
+
+        this.orderId = orderId;
+        this.amount = amount;
+        this.paymentId = paymentId;
+        this.paymentKey = paymentKey;
+        this.status = PaymentStatus.PENDING.name();
+        this.createdAt = Instant.now();
     }
 
-    public Payment withStatus(PaymentStatus newStatus) {
-        return Payment.builder()
-                .id(this.id)
-                .orderId(this.orderId)
-                .memberId(this.memberId)
-                .amount(this.amount)
-                .status(newStatus.name())
-                .createdAt(this.createdAt)
-                .build();
+    public Payment markCompleted() {
+        this.status = PaymentStatus.COMPLETED.name();
+        return this;
+    }
+
+    public Payment markFailed() {
+        this.status = PaymentStatus.FAILED.name();
+        return this;
+    }
+
+    public enum PaymentStatus {
+        PENDING, COMPLETED, FAILED
     }
 }

@@ -17,12 +17,12 @@
 
 <div class="icon">✓</div>
 <h1>결제가 완료되었습니다</h1>
-<p>결제 승인은 아직 구현 전입니다.</p>
+<p>결제 승인이 완료되었습니다.</p>
 
 <div class="params">
-    <div><strong>paymentKey:</strong> <span th:text="${param.paymentKey}"></span></div>
-    <div><strong>orderId:</strong> <span th:text="${param.orderId}"></span></div>
-    <div><strong>amount:</strong> <span th:text="${param.amount}"></span></div>
+    <div><strong>paymentKey:</strong> <span th:text="${paymentKey}"></span></div>
+    <div><strong>orderId:</strong> <span th:text="${orderId}"></span></div>
+    <div><strong>amount:</strong> <span th:text="${amount}"></span></div>
 </div>
 
 <a href="/orders" class="btn">주문 목록으로</a>
