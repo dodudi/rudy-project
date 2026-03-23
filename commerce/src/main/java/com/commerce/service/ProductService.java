@@ -4,11 +4,14 @@ import com.commerce.domain.Member;
 import com.commerce.domain.Product;
 import com.commerce.dto.ProductCreateRequest;
 import com.commerce.dto.ProductCreateResponse;
+import com.commerce.dto.ProductFilterRequest;
+import com.commerce.exception.CommerceException;
 import com.commerce.exception.DuplicateException;
 import com.commerce.exception.ErrorCode;
 import com.commerce.exception.NotFoundException;
 import com.commerce.repository.MemberRepository;
 import com.commerce.repository.ProductRepository;
+import com.commerce.repository.ProductSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,8 +47,12 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProductCreateResponse> getProducts() {
-        return productRepository.findAll().stream()
+    public List<ProductCreateResponse> getProducts(ProductFilterRequest filter) {
+        if (filter.minPrice() > 0 && filter.maxPrice() > 0 && filter.minPrice() > filter.maxPrice()) {
+            throw new CommerceException(ErrorCode.INVALID_PRICE_RANGE);
+        }
+
+        return productRepository.findAll(ProductSpecification.withFilters(filter)).stream()
                 .map(ProductCreateResponse::from)
                 .toList();
     }

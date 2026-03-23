@@ -2,6 +2,7 @@ package com.commerce.ui.client;
 
 import com.commerce.ui.dto.ProductCreateRequest;
 import com.commerce.ui.dto.ProductCreateResponse;
+import com.commerce.ui.dto.ProductFilterRequest;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
@@ -28,9 +29,15 @@ public class ProductClient {
                 .body(ProductCreateResponse.class);
     }
 
-    public List<ProductCreateResponse> getProducts() {
+    public List<ProductCreateResponse> getProducts(ProductFilterRequest filter) {
         return restClient.get()
-                .uri("/products")
+                .uri(uriBuilder -> uriBuilder
+                        .path("/products")
+                        .queryParamIfPresent("name", java.util.Optional.ofNullable(filter.getName()))
+                        .queryParam("minPrice", filter.getMinPrice() != null ? filter.getMinPrice() : 0)
+                        .queryParam("maxPrice", filter.getMaxPrice() != null ? filter.getMaxPrice() : 0)
+                        .queryParam("hasStock", filter.isHasStock())
+                        .build())
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
     }
