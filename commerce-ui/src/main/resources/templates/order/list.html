@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>주문 목록</title>
     <style>
-        body { font-family: sans-serif; max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+        body { font-family: sans-serif; max-width: 1100px; margin: 40px auto; padding: 0 20px; }
         h1 { font-size: 1.5rem; margin-bottom: 8px; }
         .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         a.btn { padding: 8px 16px; background: #4caf50; color: white; text-decoration: none; border-radius: 4px; font-size: 0.9rem; }
@@ -23,6 +23,23 @@
         .empty { text-align: center; padding: 40px; color: #999; }
         a.home { font-size: 0.85rem; color: #888; text-decoration: none; }
         a.home:hover { text-decoration: underline; }
+        .btn-refund { padding: 4px 10px; background: #ef5350; color: white; border: none; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
+        .btn-refund:hover { background: #c62828; }
+        .alert { padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; font-size: 0.9rem; }
+        .alert-success { background: #e8f5e9; color: #2e7d32; }
+        .alert-error   { background: #ffebee; color: #b71c1c; }
+
+        /* 모달 */
+        .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; }
+        .modal-backdrop.open { display: flex; align-items: center; justify-content: center; }
+        .modal { background: white; border-radius: 8px; padding: 24px; width: 380px; }
+        .modal h2 { font-size: 1.1rem; margin: 0 0 16px; }
+        .modal label { font-size: 0.85rem; color: #555; display: block; margin-bottom: 4px; }
+        .modal textarea { width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem; resize: vertical; }
+        .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+        .modal-actions button { padding: 6px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
+        .btn-cancel-modal { background: #eee; color: #333; }
+        .btn-confirm-refund { background: #ef5350; color: white; }
     </style>
 </head>
 <body>
@@ -31,6 +48,9 @@
     <h1>주문 목록</h1>
     <a th:href="@{/orders/new}" class="btn">+ 주문 생성</a>
 </div>
+
+<div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+<div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
 
 <table th:if="${!orders.isEmpty()}">
     <thead>
@@ -41,6 +61,7 @@
             <th>주문 상품</th>
             <th>합계</th>
             <th>주문 일시</th>
+            <th>환불</th>
         </tr>
     </thead>
     <tbody>
@@ -60,6 +81,11 @@
             </td>
             <td class="number" th:text="${#numbers.formatInteger(order.totalAmount, 0, 'COMMA')} + '원'"></td>
             <td th:text="${order.createdAt}"></td>
+            <td>
+                <button th:if="${order.status == 'COMPLETED'}"
+                        class="btn-refund"
+                        th:attr="onclick='openRefundModal(' + ${order.orderId} + ')'">환불</button>
+            </td>
         </tr>
     </tbody>
 </table>
@@ -68,6 +94,38 @@
 
 <br>
 <a href="/" class="home">← 홈으로</a>
+
+<!-- 환불 모달 -->
+<div id="refundModal" class="modal-backdrop">
+    <div class="modal">
+        <h2>환불 신청</h2>
+        <form id="refundForm" method="post">
+            <input type="hidden" name="_method" value="post">
+            <label for="reason">환불 사유</label>
+            <textarea id="reason" name="reason" rows="4" maxlength="200" placeholder="환불 사유를 입력하세요 (선택)"></textarea>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel-modal" onclick="closeRefundModal()">취소</button>
+                <button type="submit" class="btn-confirm-refund">환불 확인</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openRefundModal(orderId) {
+        document.getElementById('refundForm').action = '/orders/' + orderId + '/refund';
+        document.getElementById('reason').value = '';
+        document.getElementById('refundModal').classList.add('open');
+    }
+
+    function closeRefundModal() {
+        document.getElementById('refundModal').classList.remove('open');
+    }
+
+    document.getElementById('refundModal').addEventListener('click', function(e) {
+        if (e.target === this) closeRefundModal();
+    });
+</script>
 
 </body>
 </html>
