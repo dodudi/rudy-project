@@ -197,6 +197,105 @@
             <mxPoint x="-260" y="128" as="targetPoint" />
           </mxGeometry>
         </mxCell>
+        <mxCell id="3n5p1cj2dXw6GPi9pgXC-1" edge="1" parent="1" source="3n5p1cj2dXw6GPi9pgXC-2" style="rounded=0;html=1;jettySize=auto;orthogonalLoop=1;fontSize=11;endArrow=block;endFill=0;endSize=8;strokeWidth=1;shadow=0;labelBackgroundColor=none;edgeStyle=orthogonalEdgeStyle;flowAnimation=0;sketch=1;curveFitting=1;jiggle=2;fillColor=#647687;strokeColor=#314354;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="3n5p1cj2dXw6GPi9pgXC-3" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="150" y="-350" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3n5p1cj2dXw6GPi9pgXC-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#ffe6cc;strokeColor=#d79b00;sketch=1;curveFitting=1;jiggle=2;" value="결제 환불 요청&lt;br&gt;&lt;font size=&quot;1&quot;&gt;WebFlux 비동기&lt;/font&gt;" vertex="1">
+          <mxGeometry height="40" width="120" x="90" y="-440" as="geometry" />
+        </mxCell>
+        <mxCell id="3n5p1cj2dXw6GPi9pgXC-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#e1d5e7;strokeColor=#9673a6;sketch=1;curveFitting=1;jiggle=2;labelBackgroundColor=none;labelBorderColor=none;" value="환불 유효성 검사&lt;br&gt;&lt;div&gt;&lt;font size=&quot;1&quot;&gt;orderId, 환불 이유&lt;/font&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="40" width="160" x="70" y="-360" as="geometry" />
+        </mxCell>
+        <mxCell id="3n5p1cj2dXw6GPi9pgXC-4" edge="1" parent="1" source="3n5p1cj2dXw6GPi9pgXC-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="3n5p1cj2dXw6GPi9pgXC-8" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="3n5p1cj2dXw6GPi9pgXC-5" edge="1" parent="1" source="3n5p1cj2dXw6GPi9pgXC-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="3n5p1cj2dXw6GPi9pgXC-8" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="3n5p1cj2dXw6GPi9pgXC-6" parent="1" style="rhombus;whiteSpace=wrap;html=1;shadow=0;fontFamily=Helvetica;fontSize=12;align=center;strokeWidth=1;spacing=6;spacingTop=-4;rounded=0;sketch=1;curveFitting=1;jiggle=2;fillColor=#e1d5e7;strokeColor=#9673a6;" value="유효한가?" vertex="1">
+          <mxGeometry height="80" width="160" x="70" y="-280" as="geometry" />
+        </mxCell>
+        <mxCell id="3n5p1cj2dXw6GPi9pgXC-7" edge="1" parent="1" source="3n5p1cj2dXw6GPi9pgXC-3" style="rounded=0;html=1;jettySize=auto;orthogonalLoop=1;fontSize=11;endArrow=block;endFill=0;endSize=8;strokeWidth=1;shadow=0;labelBackgroundColor=none;edgeStyle=orthogonalEdgeStyle;flowAnimation=0;sketch=1;curveFitting=1;jiggle=2;fillColor=#647687;strokeColor=#314354;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="3n5p1cj2dXw6GPi9pgXC-6" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="149.5" y="-320" as="sourcePoint" />
+            <mxPoint x="149.5" y="-270" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3n5p1cj2dXw6GPi9pgXC-8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#f8cecc;strokeColor=#b85450;sketch=1;curveFitting=1;jiggle=2;" value="400 에러 반환" vertex="1">
+          <mxGeometry height="40" width="120" x="290" y="-260" as="geometry" />
+        </mxCell>
+        <mxCell id="3n5p1cj2dXw6GPi9pgXC-9" edge="1" parent="1" source="3n5p1cj2dXw6GPi9pgXC-6" style="rounded=0;html=1;jettySize=auto;orthogonalLoop=1;fontSize=11;endArrow=block;endFill=0;endSize=8;strokeWidth=1;shadow=0;labelBackgroundColor=none;edgeStyle=orthogonalEdgeStyle;flowAnimation=0;sketch=1;curveFitting=1;jiggle=2;fillColor=#647687;strokeColor=#314354;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="3n5p1cj2dXw6GPi9pgXC-8" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="530" y="-270" as="sourcePoint" />
+            <mxPoint x="270" y="-240" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3n5p1cj2dXw6GPi9pgXC-10" connectable="0" parent="3n5p1cj2dXw6GPi9pgXC-9" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;labelBackgroundColor=none;" value="X" vertex="1">
+          <mxGeometry relative="1" x="-0.1333" y="1" as="geometry">
+            <mxPoint y="-9" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3n5p1cj2dXw6GPi9pgXC-11" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#e1d5e7;strokeColor=#9673a6;sketch=1;curveFitting=1;jiggle=2;" value="토스 승인 API 호출" vertex="1">
+          <mxGeometry height="40" width="160" x="70" y="-84" as="geometry" />
+        </mxCell>
+        <mxCell id="3n5p1cj2dXw6GPi9pgXC-12" edge="1" parent="1" source="3n5p1cj2dXw6GPi9pgXC-6" style="rounded=0;html=1;jettySize=auto;orthogonalLoop=1;fontSize=11;endArrow=block;endFill=0;endSize=8;strokeWidth=1;shadow=0;labelBackgroundColor=none;edgeStyle=orthogonalEdgeStyle;flowAnimation=0;sketch=1;curveFitting=1;jiggle=2;fillColor=#647687;strokeColor=#314354;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="3n5p1cj2dXw6GPi9pgXC-15" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="600" y="-300" as="sourcePoint" />
+            <mxPoint x="600" y="-260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3n5p1cj2dXw6GPi9pgXC-13" edge="1" parent="1" source="3n5p1cj2dXw6GPi9pgXC-11" style="rounded=0;html=1;jettySize=auto;orthogonalLoop=1;fontSize=11;endArrow=block;endFill=0;endSize=8;strokeWidth=1;shadow=0;labelBackgroundColor=none;edgeStyle=orthogonalEdgeStyle;flowAnimation=0;sketch=1;curveFitting=1;jiggle=2;fillColor=#647687;strokeColor=#314354;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="3n5p1cj2dXw6GPi9pgXC-14" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="390" y="2" as="sourcePoint" />
+            <mxPoint x="150" y="-8" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3n5p1cj2dXw6GPi9pgXC-14" parent="1" style="rhombus;whiteSpace=wrap;html=1;shadow=0;fontFamily=Helvetica;fontSize=12;align=center;strokeWidth=1;spacing=6;spacingTop=-4;rounded=0;sketch=1;curveFitting=1;jiggle=2;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" value="PG 환불 성공?" vertex="1">
+          <mxGeometry height="80" width="120" x="90" y="-8" as="geometry" />
+        </mxCell>
+        <mxCell id="3n5p1cj2dXw6GPi9pgXC-15" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#e1d5e7;strokeColor=#9673a6;sketch=1;curveFitting=1;jiggle=2;" value="토스 환불 API 요청값 파싱&lt;br&gt;&lt;font size=&quot;1&quot;&gt;Authorization, paymentKey ...&lt;/font&gt;" vertex="1">
+          <mxGeometry height="40" width="160" x="70" y="-160" as="geometry" />
+        </mxCell>
+        <mxCell id="3n5p1cj2dXw6GPi9pgXC-16" edge="1" parent="1" source="3n5p1cj2dXw6GPi9pgXC-15" style="rounded=0;html=1;jettySize=auto;orthogonalLoop=1;fontSize=11;endArrow=block;endFill=0;endSize=8;strokeWidth=1;shadow=0;labelBackgroundColor=none;edgeStyle=orthogonalEdgeStyle;flowAnimation=0;sketch=1;curveFitting=1;jiggle=2;fillColor=#647687;strokeColor=#314354;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="3n5p1cj2dXw6GPi9pgXC-11" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="165" y="-176" as="sourcePoint" />
+            <mxPoint x="165" y="-136" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3n5p1cj2dXw6GPi9pgXC-17" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#f8cecc;strokeColor=#b85450;sketch=1;curveFitting=1;jiggle=2;" value="400 &amp;amp; 500 에러 반환" vertex="1">
+          <mxGeometry height="40" width="120" x="290" y="12" as="geometry" />
+        </mxCell>
+        <mxCell id="3n5p1cj2dXw6GPi9pgXC-18" edge="1" parent="1" source="3n5p1cj2dXw6GPi9pgXC-14" style="rounded=0;html=1;jettySize=auto;orthogonalLoop=1;fontSize=11;endArrow=block;endFill=0;endSize=8;strokeWidth=1;shadow=0;labelBackgroundColor=none;edgeStyle=orthogonalEdgeStyle;flowAnimation=0;sketch=1;curveFitting=1;jiggle=2;fillColor=#647687;strokeColor=#314354;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" target="3n5p1cj2dXw6GPi9pgXC-17" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="183" y="-11" as="sourcePoint" />
+            <mxPoint x="183" y="25" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3n5p1cj2dXw6GPi9pgXC-19" connectable="0" parent="3n5p1cj2dXw6GPi9pgXC-18" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="X" vertex="1">
+          <mxGeometry relative="1" x="-0.1432" y="1" as="geometry">
+            <mxPoint y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3n5p1cj2dXw6GPi9pgXC-20" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#e1d5e7;strokeColor=#9673a6;sketch=1;curveFitting=1;jiggle=2;" value="결제 내용 DB 상태 변경" vertex="1">
+          <mxGeometry height="40" width="160" x="70" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="3n5p1cj2dXw6GPi9pgXC-21" edge="1" parent="1" source="3n5p1cj2dXw6GPi9pgXC-14" style="rounded=0;html=1;jettySize=auto;orthogonalLoop=1;fontSize=11;endArrow=block;endFill=0;endSize=8;strokeWidth=1;shadow=0;labelBackgroundColor=none;edgeStyle=orthogonalEdgeStyle;flowAnimation=0;sketch=1;curveFitting=1;jiggle=2;fillColor=#647687;strokeColor=#314354;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="3n5p1cj2dXw6GPi9pgXC-20" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="120" y="74" as="sourcePoint" />
+            <mxPoint x="356" y="30" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3n5p1cj2dXw6GPi9pgXC-22" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#dae8fc;strokeColor=#6c8ebf;sketch=1;curveFitting=1;jiggle=2;" value="200 반환" vertex="1">
+          <mxGeometry height="40" width="120" x="90" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="3n5p1cj2dXw6GPi9pgXC-23" edge="1" parent="1" source="3n5p1cj2dXw6GPi9pgXC-20" style="rounded=0;html=1;jettySize=auto;orthogonalLoop=1;fontSize=11;endArrow=block;endFill=0;endSize=8;strokeWidth=1;shadow=0;labelBackgroundColor=none;edgeStyle=orthogonalEdgeStyle;flowAnimation=0;sketch=1;curveFitting=1;jiggle=2;fillColor=#647687;strokeColor=#314354;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="3n5p1cj2dXw6GPi9pgXC-22" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="169" y="80" as="sourcePoint" />
+            <mxPoint x="169" y="128" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
@@ -995,15 +1094,6 @@
             <mxPoint x="320" y="2120" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="x6N27YDuNmAxyJOozCZK-13" edge="1" parent="1" source="x6N27YDuNmAxyJOozCZK-4" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" target="x6N27YDuNmAxyJOozCZK-8" value="중복 결제 체크, 저장 (TTL 10m)">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="600" y="2150" />
-            </Array>
-            <mxPoint x="510" y="2150" as="sourcePoint" />
-            <mxPoint x="680" y="2150" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
         <mxCell id="x6N27YDuNmAxyJOozCZK-17" edge="1" parent="1" source="x6N27YDuNmAxyJOozCZK-4" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" target="x6N27YDuNmAxyJOozCZK-19" value="결제 승인 요청">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
@@ -1123,6 +1213,186 @@
             <mxPoint x="340" y="2180" as="sourcePoint" />
             <mxPoint x="1230" y="2180" as="targetPoint" />
           </mxGeometry>
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-1" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;autosize=1;resizable=0;" value="주문 요청" vertex="1">
+          <mxGeometry height="26" width="66" x="-43" y="1410" as="geometry" />
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-2" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;autosize=1;resizable=0;" value="결제 사용자 - UI - 처리 전체 로직" vertex="1">
+          <mxGeometry height="26" width="183" x="594" y="1406" as="geometry" />
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-3" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;autosize=1;resizable=0;" value="결제 승인 서비스 처리" vertex="1">
+          <mxGeometry height="26" width="127" x="627" y="2014" as="geometry" />
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-9" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" value=":client" vertex="1">
+          <mxGeometry height="600" width="100" x="280" y="2840" as="geometry" />
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-10" parent="oNhBXDkOCl_dlTEXaq7y-9" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
+          <mxGeometry height="490" width="10" x="45" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-11" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" value=":Payment" vertex="1">
+          <mxGeometry height="600" width="100" x="460" y="2840" as="geometry" />
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-12" parent="oNhBXDkOCl_dlTEXaq7y-11" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
+          <mxGeometry height="480" width="10" x="45" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-13" edge="1" parent="1" style="html=1;verticalAlign=bottom;startArrow=oval;endArrow=block;startSize=8;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" target="oNhBXDkOCl_dlTEXaq7y-10" value="dispatch">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="290" y="2920" />
+            </Array>
+            <mxPoint x="260" y="2920" as="sourcePoint" />
+            <mxPoint x="320" y="2920" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-14" edge="1" parent="1" source="oNhBXDkOCl_dlTEXaq7y-10" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" target="oNhBXDkOCl_dlTEXaq7y-12" value="결제 환불 요청">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="425" y="2950" />
+            </Array>
+            <mxPoint x="335" y="2950" as="sourcePoint" />
+            <mxPoint x="505" y="2950" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="x6N27YDuNmAxyJOozCZK-13" edge="1" parent="1" source="x6N27YDuNmAxyJOozCZK-4" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" target="x6N27YDuNmAxyJOozCZK-8" value="중복 결제 체크, 저장 (TTL 10m)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="600" y="2150" />
+            </Array>
+            <mxPoint x="510" y="2150" as="sourcePoint" />
+            <mxPoint x="680" y="2150" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-15" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" value=":DB" vertex="1">
+          <mxGeometry height="600" width="100" x="640.5" y="2840" as="geometry" />
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-16" parent="oNhBXDkOCl_dlTEXaq7y-15" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
+          <mxGeometry height="480" width="10" x="45" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-17" edge="1" parent="1" source="oNhBXDkOCl_dlTEXaq7y-12" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" target="oNhBXDkOCl_dlTEXaq7y-16" value="결제 내역 조회">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="600" y="2950" />
+            </Array>
+            <mxPoint x="510" y="2950" as="sourcePoint" />
+            <mxPoint x="680" y="2950" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-18" edge="1" parent="1" source="oNhBXDkOCl_dlTEXaq7y-12" style="html=1;verticalAlign=bottom;endArrow=none;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;startArrow=block;startFill=1;endFill=0;" target="oNhBXDkOCl_dlTEXaq7y-16" value="결제 내역 반환">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="560" y="3010" />
+              <mxPoint x="650" y="3000" />
+              <mxPoint x="570" y="2980" />
+            </Array>
+            <mxPoint x="210" y="2980" as="sourcePoint" />
+            <mxPoint x="920" y="2980" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-19" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=none;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;startArrow=block;startFill=1;endFill=0;strokeColor=#FF0000;fontColor=#FF0000;" value="결제 내역 없는 경우 400 반환">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="419.75" y="2980" />
+            </Array>
+            <mxPoint x="334.7500000000002" y="2980" as="sourcePoint" />
+            <mxPoint x="685.25" y="2980" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-20" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" value=":toss" vertex="1">
+          <mxGeometry height="600" width="100" x="820" y="2840" as="geometry" />
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-21" parent="oNhBXDkOCl_dlTEXaq7y-20" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
+          <mxGeometry height="480" width="10" x="45" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-22" edge="1" parent="1" source="oNhBXDkOCl_dlTEXaq7y-12" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" target="oNhBXDkOCl_dlTEXaq7y-21" value="결제 환불 API 요청">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="595" y="3040" />
+            </Array>
+            <mxPoint x="510" y="3040" as="sourcePoint" />
+            <mxPoint x="681" y="3040" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-23" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1" value="TOSS 환불 실패" vertex="1">
+          <mxGeometry height="30" width="400" x="490" y="3060" as="geometry" />
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-25" edge="1" parent="1" source="oNhBXDkOCl_dlTEXaq7y-12" style="html=1;verticalAlign=bottom;endArrow=none;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;startArrow=block;startFill=1;endFill=0;strokeColor=#FF0000;fontColor=#FF0000;" target="oNhBXDkOCl_dlTEXaq7y-21" value="토스 환불 실패 에러 반환">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="600.2499999999998" y="3120" />
+            </Array>
+            <mxPoint x="515.25" y="3120" as="sourcePoint" />
+            <mxPoint x="865.7499999999998" y="3120" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-26" edge="1" parent="1" source="oNhBXDkOCl_dlTEXaq7y-12" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" target="oNhBXDkOCl_dlTEXaq7y-16" value="환불 실패 Outbox 정보 저장">
+          <mxGeometry relative="1" x="0.0031" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="595.5" y="3160" />
+            </Array>
+            <mxPoint x="515.5" y="3160" as="sourcePoint" />
+            <mxPoint x="865.5" y="3160" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-27" edge="1" parent="1" source="oNhBXDkOCl_dlTEXaq7y-10" style="html=1;verticalAlign=bottom;endArrow=none;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;startArrow=block;startFill=1;endFill=0;strokeColor=#FF0000;fontColor=#FF0000;" target="oNhBXDkOCl_dlTEXaq7y-16" value="환불 실패 에러 반환">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="590" y="3190" />
+              <mxPoint x="420.2499999999998" y="3190" />
+            </Array>
+            <mxPoint x="335" y="3190" as="sourcePoint" />
+            <mxPoint x="685" y="3190" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-28" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1" value="TOSS 환불 성공" vertex="1">
+          <mxGeometry height="30" width="400" x="490.5" y="3210" as="geometry" />
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-31" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=none;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;startArrow=block;startFill=1;endFill=0;" value="토스 환불 성공">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="705" y="3270" />
+              <mxPoint x="860" y="3310" />
+            </Array>
+            <mxPoint x="515.0000000000002" y="3270" as="sourcePoint" />
+            <mxPoint x="865" y="3270" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-32" edge="1" parent="1" source="oNhBXDkOCl_dlTEXaq7y-12" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" target="oNhBXDkOCl_dlTEXaq7y-16" value="환불 성공 Outbox 정보 저장">
+          <mxGeometry relative="1" x="0.0031" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="600.5" y="3300" />
+            </Array>
+            <mxPoint x="520" y="3300" as="sourcePoint" />
+            <mxPoint x="691" y="3300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-34" edge="1" parent="1" source="oNhBXDkOCl_dlTEXaq7y-10" style="html=1;verticalAlign=bottom;endArrow=none;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;startArrow=block;startFill=1;endFill=0;" target="oNhBXDkOCl_dlTEXaq7y-16" value="토스 환불 결제 내역 반환">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="524.9999999999998" y="3360" />
+              <mxPoint x="679.9999999999998" y="3400" />
+            </Array>
+            <mxPoint x="335" y="3360" as="sourcePoint" />
+            <mxPoint x="684.9999999999998" y="3360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-35" edge="1" parent="1" source="oNhBXDkOCl_dlTEXaq7y-12" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" target="oNhBXDkOCl_dlTEXaq7y-16" value="결제 내역 상태 수정">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="620" y="3330" />
+              <mxPoint x="595" y="3340" />
+            </Array>
+            <mxPoint x="510" y="3340" as="sourcePoint" />
+            <mxPoint x="681" y="3340" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="oNhBXDkOCl_dlTEXaq7y-36" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;autosize=1;resizable=0;" value="결제 환불 서비스 처리" vertex="1">
+          <mxGeometry height="30" width="130" x="539" y="2808" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

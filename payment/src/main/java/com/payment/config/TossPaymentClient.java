@@ -37,4 +37,20 @@ public class TossPaymentClient {
                 )
                 .bodyToMono(TossConfirmResponse.class);
     }
+
+    public Mono<Void> cancel(String paymentKey, String cancelReason) {
+        log.info("Toss cancel 요청: paymentKey={}", paymentKey);
+
+        return tossWebClient.post()
+                .uri("/v1/payments/{paymentKey}/cancel", paymentKey)
+                .bodyValue(Map.of("cancelReason", cancelReason != null ? cancelReason : "고객 요청"))
+                .retrieve()
+                .onStatus(
+                        status -> status.is4xxClientError() || status.is5xxServerError(),
+                        response -> response.bodyToMono(String.class)
+                                .doOnNext(body -> log.error("Toss cancel 오류: status={}, body={}", response.statusCode(), body))
+                                .flatMap(body -> Mono.error(new TossPaymentException("Toss cancel 실패: " + body)))
+                )
+                .bodyToMono(Void.class);
+    }
 }
