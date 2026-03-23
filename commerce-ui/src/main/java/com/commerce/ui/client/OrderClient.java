@@ -2,6 +2,7 @@ package com.commerce.ui.client;
 
 import com.commerce.ui.dto.OrderRequest;
 import com.commerce.ui.dto.OrderResponse;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -14,7 +15,7 @@ public class OrderClient {
 
     private final RestClient restClient;
 
-    public OrderClient(RestClient restClient) {
+    public OrderClient(@Qualifier("commerceRestClient") RestClient restClient) {
         this.restClient = restClient;
     }
 

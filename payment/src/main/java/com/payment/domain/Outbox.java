@@ -1,15 +1,18 @@
 package com.payment.domain;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.util.Assert;
 
 import java.time.Instant;
 
 @Getter
 @Table("outbox")
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Outbox {
 
@@ -27,16 +30,27 @@ public class Outbox {
 
     private Instant publishedAt;
 
-    public static Outbox create(String topic, String payload) {
-        return new Outbox(null, topic, payload, OutboxStatus.PENDING.name(), null, null);
+    @Builder
+    private Outbox(String topic, String payload) {
+        Assert.hasText(topic, "outbox 토픽은 필수 값입니다.");
+        Assert.hasText(payload, "outbox 페이로드는 필수 값입니다.");
+
+        this.topic = topic;
+        this.payload = payload;
+        this.status = OutboxStatus.PENDING.name();
+        this.createdAt = Instant.now();
     }
 
     public Outbox markPublished() {
-        return new Outbox(this.id, this.topic, this.payload, OutboxStatus.PUBLISHED.name(), this.createdAt, Instant.now());
+        this.publishedAt = Instant.now();
+        this.status = OutboxStatus.PUBLISHED.name();
+        return this;
     }
 
     public Outbox markFailed() {
-        return new Outbox(this.id, this.topic, this.payload, OutboxStatus.FAILED.name(), this.createdAt, this.publishedAt);
+        this.publishedAt = null;
+        this.status = OutboxStatus.FAILED.name();
+        return this;
     }
 
     public enum OutboxStatus {
