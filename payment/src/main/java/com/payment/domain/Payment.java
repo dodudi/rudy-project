@@ -57,7 +57,16 @@ public class Payment {
         return this;
     }
 
+    public Payment markRefunded() {
+        this.status = PaymentStatus.REFUNDED.name();
+        return this;
+    }
+
+    public boolean isRefundable() {
+        return PaymentStatus.COMPLETED.name().equals(this.status);
+    }
+
     public enum PaymentStatus {
-        PENDING, COMPLETED, FAILED
+        PENDING, COMPLETED, FAILED, REFUNDED
     }
 }

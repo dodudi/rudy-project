@@ -7,6 +7,7 @@ import com.payment.domain.Outbox;
 import com.payment.domain.Payment;
 import com.payment.dto.PaymentRequest;
 import com.payment.dto.PaymentResponse;
+import com.payment.dto.RefundRequest;
 import com.payment.event.PaymentResultEvent;
 import com.payment.exception.ErrorCode;
 import com.payment.exception.PaymentException;
@@ -72,6 +73,30 @@ public class PaymentService {
             String payload = objectMapper.writeValueAsString(event);
             Payment marked = event.status().equals("COMPLETED") ? payment.markCompleted() : payment.markFailed();
             return paymentRepository.save(marked)
+                    .flatMap(saved -> outboxRepository.save(Outbox.builder().topic("payment.result").payload(payload).build())
+                            .thenReturn(saved));
+        } catch (JsonProcessingException e) {
+            return Mono.error(e);
+        }
+    }
+
+    public Mono<PaymentResponse> refund(RefundRequest request) {
+        return paymentRepository.findByOrderId(request.orderId())
+                .switchIfEmpty(Mono.error(new PaymentException(ErrorCode.PAYMENT_NOT_FOUND)))
+                .filter(Payment::isRefundable)
+                .switchIfEmpty(Mono.error(new PaymentException(ErrorCode.NOT_REFUNDABLE_PAYMENT)))
+                .flatMap(payment -> tossPaymentClient.cancel(payment.getPaymentKey(), request.reason())
+                        .thenReturn(payment.markRefunded()))
+                .flatMap(this::saveRefundWithEvent)
+                .map(PaymentResponse::from)
+                .doOnSuccess(r -> log.info("환불 처리 완료"))
+                .doOnError(e -> log.error("환불 처리 실패"));
+    }
+
+    private Mono<Payment> saveRefundWithEvent(Payment payment) {
+        try {
+            String payload = objectMapper.writeValueAsString(PaymentResultEvent.refunded(payment.getOrderId()));
+            return paymentRepository.save(payment)
                     .flatMap(saved -> outboxRepository.save(Outbox.builder().topic("payment.result").payload(payload).build())
                             .thenReturn(saved));
         } catch (JsonProcessingException e) {
