@@ -29,4 +29,16 @@ public class PaymentClient {
                 .retrieve()
                 .toBodilessEntity();
     }
+
+    public void refund(Long orderId, String reason) {
+        restClient.post()
+                .uri("/payments/refund")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of(
+                        "orderId", orderId,
+                        "reason", reason
+                ))
+                .retrieve()
+                .toBodilessEntity();
+    }
 }
