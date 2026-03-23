@@ -2,6 +2,7 @@ package com.commerce.controller;
 
 import com.commerce.dto.ProductCreateRequest;
 import com.commerce.dto.ProductCreateResponse;
+import com.commerce.dto.ProductFilterRequest;
 import com.commerce.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,8 +26,10 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProductCreateResponse>> getProducts() {
-        return ResponseEntity.ok(productService.getProducts());
+    public ResponseEntity<List<ProductCreateResponse>> getProducts(
+            @Valid @ModelAttribute ProductFilterRequest filter
+    ) {
+        return ResponseEntity.ok(productService.getProducts(filter));
     }
 
 }

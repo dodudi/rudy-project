@@ -2,7 +2,9 @@ package com.commerce.ui.controller;
 
 import com.commerce.ui.client.ProductClient;
 import com.commerce.ui.dto.ProductCreateRequest;
+import com.commerce.ui.dto.ProductFilterRequest;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -23,8 +25,14 @@ public class ProductController {
     }
 
     @GetMapping
-    public String list(Model model) {
-        model.addAttribute("products", productClient.getProducts());
+    public String list(@ModelAttribute ProductFilterRequest filter, Model model) {
+        try {
+            model.addAttribute("products", productClient.getProducts(filter));
+        } catch (Exception e) {
+            model.addAttribute("products", List.of());
+            model.addAttribute("error", e.getMessage());
+        }
+        model.addAttribute("filter", filter);
         return "product/list";
     }
 

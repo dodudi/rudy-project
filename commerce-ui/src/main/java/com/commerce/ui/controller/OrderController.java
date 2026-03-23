@@ -7,6 +7,7 @@ import com.commerce.ui.client.ProductClient;
 import com.commerce.ui.dto.OrderItemRequest;
 import com.commerce.ui.dto.OrderRequest;
 import com.commerce.ui.dto.OrderResponse;
+import com.commerce.ui.dto.ProductFilterRequest;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -46,7 +47,7 @@ public class OrderController {
         OrderRequest orderRequest = new OrderRequest();
         model.addAttribute("orderRequest", orderRequest);
         model.addAttribute("members", memberClient.getMembers());
-        model.addAttribute("products", productClient.getProducts());
+        model.addAttribute("products", productClient.getProducts(new ProductFilterRequest()));
         return "order/form";
     }
 
@@ -57,7 +58,7 @@ public class OrderController {
                               RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("members", memberClient.getMembers());
-            model.addAttribute("products", productClient.getProducts());
+            model.addAttribute("products", productClient.getProducts(new ProductFilterRequest()));
             return "order/form";
         }
 
@@ -68,7 +69,7 @@ public class OrderController {
         } catch (Exception e) {
             model.addAttribute("error", "주문 처리 중 오류가 발생했습니다: " + e.getMessage());
             model.addAttribute("members", memberClient.getMembers());
-            model.addAttribute("products", productClient.getProducts());
+            model.addAttribute("products", productClient.getProducts(new ProductFilterRequest()));
             return "order/form";
         }
     }
