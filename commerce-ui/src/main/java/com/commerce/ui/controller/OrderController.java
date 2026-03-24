@@ -4,6 +4,7 @@ import com.commerce.ui.client.MemberClient;
 import com.commerce.ui.client.OrderClient;
 import com.commerce.ui.client.PaymentClient;
 import com.commerce.ui.client.ProductClient;
+import com.commerce.ui.dto.OrderFilterRequest;
 import com.commerce.ui.dto.OrderItemRequest;
 import com.commerce.ui.dto.OrderRequest;
 import com.commerce.ui.dto.OrderResponse;
@@ -37,8 +38,9 @@ public class OrderController {
     }
 
     @GetMapping
-    public String list(Model model) {
-        model.addAttribute("orders", orderClient.getOrders());
+    public String list(@ModelAttribute OrderFilterRequest filter, Model model) {
+        model.addAttribute("orders", orderClient.getOrders(filter));
+        model.addAttribute("filter", filter);
         return "order/list";
     }
 

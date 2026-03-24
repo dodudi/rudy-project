@@ -1,5 +1,6 @@
 package com.commerce.ui.client;
 
+import com.commerce.ui.dto.OrderFilterRequest;
 import com.commerce.ui.dto.OrderRequest;
 import com.commerce.ui.dto.OrderResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -28,9 +29,15 @@ public class OrderClient {
                 .body(OrderResponse.class);
     }
 
-    public List<OrderResponse> getOrders() {
+    public List<OrderResponse> getOrders(OrderFilterRequest filter) {
         return restClient.get()
-                .uri("/orders")
+                .uri(uriBuilder -> uriBuilder
+                        .path("/orders")
+                        .queryParamIfPresent("memberId", java.util.Optional.ofNullable(filter.getMemberId()))
+                        .queryParamIfPresent("status", java.util.Optional.ofNullable(filter.getStatus()))
+                        .queryParamIfPresent("startDate", java.util.Optional.ofNullable(filter.getStartDate()))
+                        .queryParamIfPresent("endDate", java.util.Optional.ofNullable(filter.getEndDate()))
+                        .build())
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
     }

@@ -1,9 +1,12 @@
 package com.commerce.service;
 
 import com.commerce.domain.Member;
+import com.commerce.domain.OrderStatus;
 import com.commerce.domain.Product;
 import com.commerce.dto.OrderCreateRequest;
 import com.commerce.dto.OrderCreateResponse;
+import com.commerce.dto.OrderFilterRequest;
+import com.commerce.dto.OrderResponse;
 import com.commerce.event.PaymentRequestEvent;
 import com.commerce.exception.EmptyException;
 import com.commerce.exception.InsufficientStockException;
@@ -18,6 +21,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -184,5 +188,82 @@ class OrderServiceTest {
         assertThatThrownBy(() -> orderService.createOrder(request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("상품 구매 수량은 1개 이상이어야 합니다.");
+    }
+
+    @Test
+    void 주문목록_상태필터_조회성공() {
+        // given
+        orderService.createOrder(new OrderCreateRequest(member.getId(), List.of(
+                new OrderCreateRequest.OrderItem(radioProduct.getId(), 1)
+        )));
+
+        OrderFilterRequest filterRequest = new OrderFilterRequest(member.getId(), OrderStatus.CREATED, null, null);
+
+        // when
+        List<OrderResponse> orders = orderService.getOrders(filterRequest);
+
+        // then
+        assertThat(orders).hasSize(1);
+        assertThat(orders.getFirst().status()).isEqualTo(OrderStatus.CREATED);
+    }
+
+    @Test
+    void 주문목록_날짜범위_필터조회_성공() {
+        // given
+        orderService.createOrder(new OrderCreateRequest(member.getId(), List.of(
+                new OrderCreateRequest.OrderItem(radioProduct.getId(), 1)
+        )));
+
+        Instant start = Instant.now().minusSeconds(60);
+        Instant end = Instant.now().plusSeconds(60);
+        OrderFilterRequest filterRequest = new OrderFilterRequest(member.getId(), null, start, end);
+
+        // when
+        List<OrderResponse> orders = orderService.getOrders(filterRequest);
+
+        // then
+        assertThat(orders).hasSize(1);
+    }
+
+    @Test
+    void 주문목록_날짜범위_벗어난경우_빈목록반환() {
+        // given
+        orderService.createOrder(new OrderCreateRequest(member.getId(), List.of(
+                new OrderCreateRequest.OrderItem(radioProduct.getId(), 1)
+        )));
+
+        Instant start = Instant.now().plusSeconds(3600);
+        Instant end = Instant.now().plusSeconds(7200);
+        OrderFilterRequest filterRequest = new OrderFilterRequest(member.getId(), null, start, end);
+
+        // when
+        List<OrderResponse> orders = orderService.getOrders(filterRequest);
+
+        // then
+        assertThat(orders).isEmpty();
+    }
+
+    @Test
+    void 주문목록_조회성공() {
+        // given
+        OrderCreateRequest createRequest = new OrderCreateRequest(member.getId(), List.of(
+                new OrderCreateRequest.OrderItem(radioProduct.getId(), 1),
+                new OrderCreateRequest.OrderItem(phoneProduct.getId(), 2)
+        ));
+        OrderCreateResponse created = orderService.createOrder(createRequest);
+
+        OrderFilterRequest filterRequest = new OrderFilterRequest(member.getId(), null, null, null);
+
+        // when
+        List<OrderResponse> orders = orderService.getOrders(filterRequest);
+
+        // then
+        assertThat(orders).hasSize(1);
+        assertThat(orders.getFirst().orderId()).isEqualTo(created.orderId());
+        assertThat(orders.getFirst().nickname()).isEqualTo(member.getNickname());
+        assertThat(orders.getFirst().status()).isEqualTo(created.status());
+        assertThat(orders.getFirst().orderItems()).hasSize(2);
+        assertThat(orders.getFirst().orderItems().get(0).productId()).isEqualTo(radioProduct.getId());
+        assertThat(orders.getFirst().orderItems().get(1).productId()).isEqualTo(phoneProduct.getId());
     }
 }
