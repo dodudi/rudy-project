@@ -6,6 +6,7 @@ import com.commerce.domain.Product;
 import com.commerce.dto.OrderCreateRequest;
 import com.commerce.dto.OrderCreateResponse;
 import com.commerce.dto.OrderFilterRequest;
+import com.commerce.dto.OrderResponse;
 import com.commerce.exception.EmptyException;
 import com.commerce.exception.ErrorCode;
 import com.commerce.exception.NotFoundException;
@@ -69,9 +70,9 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public List<OrderCreateResponse> getOrders(OrderFilterRequest filter) {
+    public List<OrderResponse> getOrders(OrderFilterRequest filter) {
         return orderRepository.findAll(OrderSpecification.withFilters(filter)).stream()
-                .map(OrderCreateResponse::from)
+                .map(OrderResponse::from)
                 .toList();
     }
 }

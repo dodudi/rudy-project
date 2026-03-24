@@ -23,6 +23,13 @@
         .empty { text-align: center; padding: 40px; color: #999; }
         a.home { font-size: 0.85rem; color: #888; text-decoration: none; }
         a.home:hover { text-decoration: underline; }
+        .filter-form { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 20px; padding: 16px; background: #f9f9f9; border-radius: 6px; }
+        .filter-form label { font-size: 0.8rem; color: #555; display: block; margin-bottom: 4px; }
+        .filter-form input, .filter-form select { padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem; }
+        .filter-form button { padding: 7px 16px; background: #1976d2; color: white; border: none; border-radius: 4px; font-size: 0.9rem; cursor: pointer; }
+        .filter-form button:hover { background: #1565c0; }
+        .btn-reset { background: #eee !important; color: #333 !important; }
+        .btn-reset:hover { background: #ddd !important; }
         .btn-refund { padding: 4px 10px; background: #ef5350; color: white; border: none; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
         .btn-refund:hover { background: #c62828; }
         .alert { padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; font-size: 0.9rem; }
@@ -52,11 +59,43 @@
 <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
 <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
 
+<form method="get" th:action="@{/orders}" class="filter-form">
+    <div>
+        <label for="memberId">회원 ID</label>
+        <input id="memberId" type="number" name="memberId" placeholder="회원 ID"
+               th:value="${filter.memberId}">
+    </div>
+    <div>
+        <label for="status">상태</label>
+        <select id="status" name="status">
+            <option value="">전체</option>
+            <option value="CREATED"    th:selected="${filter.status == 'CREATED'}">주문 생성</option>
+            <option value="COMPLETED"  th:selected="${filter.status == 'COMPLETED'}">결제 완료</option>
+            <option value="FAILED"     th:selected="${filter.status == 'FAILED'}">결제 실패</option>
+            <option value="CANCELLED"  th:selected="${filter.status == 'CANCELLED'}">취소</option>
+        </select>
+    </div>
+    <div>
+        <label for="startDate">시작일</label>
+        <input id="startDate" type="datetime-local" name="startDate"
+               th:value="${filter.startDate != null ? #strings.replace(filter.startDate, 'Z', '') : ''}">
+    </div>
+    <div>
+        <label for="endDate">종료일</label>
+        <input id="endDate" type="datetime-local" name="endDate"
+               th:value="${filter.endDate != null ? #strings.replace(filter.endDate, 'Z', '') : ''}">
+    </div>
+    <div>
+        <button type="submit">검색</button>
+        <a th:href="@{/orders}" class="btn-reset" style="padding: 7px 16px; border-radius: 4px; text-decoration: none; font-size: 0.9rem; background: #eee; color: #333;">초기화</a>
+    </div>
+</form>
+
 <table th:if="${!orders.isEmpty()}">
     <thead>
         <tr>
             <th>주문 ID</th>
-            <th>회원 ID</th>
+            <th>회원 닉네임</th>
             <th>상태</th>
             <th>주문 상품</th>
             <th>합계</th>
@@ -67,7 +106,7 @@
     <tbody>
         <tr th:each="order : ${orders}">
             <td th:text="${order.orderId}"></td>
-            <td th:text="${order.memberId}"></td>
+            <td th:text="${order.nickname}"></td>
             <td>
                 <span class="status"
                       th:classappend="'status-' + ${order.status}"
@@ -80,7 +119,7 @@
                 </ul>
             </td>
             <td class="number" th:text="${#numbers.formatInteger(order.totalAmount, 0, 'COMMA')} + '원'"></td>
-            <td th:text="${order.createdAt}"></td>
+            <td class="local-time" th:attr="data-utc=${order.createdAt}"></td>
             <td>
                 <button th:if="${order.status == 'COMPLETED'}"
                         class="btn-refund"
@@ -112,6 +151,27 @@
 </div>
 
 <script>
+    // 주문 일시: UTC → 브라우저 로컬 시간대로 변환
+    document.querySelectorAll('.local-time').forEach(td => {
+        const utc = td.dataset.utc;
+        if (utc) {
+            td.textContent = new Date(utc).toLocaleString(undefined, {
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            });
+        }
+    });
+
+    // 필터 날짜: 로컬 datetime-local 입력값 → ISO 8601(UTC) 변환 후 전송
+    document.querySelector('.filter-form').addEventListener('submit', function () {
+        ['startDate', 'endDate'].forEach(id => {
+            const input = document.getElementById(id);
+            if (input.value) {
+                input.value = new Date(input.value).toISOString();
+            }
+        });
+    });
+
     function openRefundModal(orderId) {
         document.getElementById('refundForm').action = '/orders/' + orderId + '/refund';
         document.getElementById('reason').value = '';

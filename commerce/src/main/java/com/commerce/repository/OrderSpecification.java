@@ -11,11 +11,11 @@ import java.util.List;
 
 public class OrderSpecification {
 
-    private OrderSpecification() {}
+    private OrderSpecification() {
+    }
 
     public static Specification<Order> withFilters(OrderFilterRequest filter) {
         return (root, query, cb) -> {
-            // count 쿼리에서는 fetch join 제외 (MultipleBagFetchException 방지)
             if (!Long.class.equals(query.getResultType())) {
                 root.fetch("member", JoinType.LEFT);
                 root.fetch("orderItems", JoinType.LEFT);
@@ -24,17 +24,17 @@ public class OrderSpecification {
 
             List<Predicate> predicates = new ArrayList<>();
 
-            if (filter.getMemberId() != null) {
-                predicates.add(cb.equal(root.get("member").get("id"), filter.getMemberId()));
+            if (filter.memberId() != null) {
+                predicates.add(cb.equal(root.get("member").get("id"), filter.memberId()));
             }
-            if (filter.getStatus() != null) {
-                predicates.add(cb.equal(root.get("status"), filter.getStatus()));
+            if (filter.status() != null) {
+                predicates.add(cb.equal(root.get("status"), filter.status()));
             }
-            if (filter.getStartDate() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("createdAt"), filter.getStartDate()));
+            if (filter.startDate() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("createdAt"), filter.startDate()));
             }
-            if (filter.getEndDate() != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("createdAt"), filter.getEndDate()));
+            if (filter.endDate() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("createdAt"), filter.endDate()));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

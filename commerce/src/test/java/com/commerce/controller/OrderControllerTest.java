@@ -4,6 +4,7 @@ import com.commerce.domain.OrderStatus;
 import com.commerce.dto.OrderCreateRequest;
 import com.commerce.dto.OrderCreateResponse;
 import com.commerce.dto.OrderItemResponse;
+import com.commerce.dto.OrderResponse;
 import com.commerce.exception.ErrorCode;
 import com.commerce.exception.InsufficientStockException;
 import com.commerce.exception.NotFoundException;
@@ -83,7 +84,7 @@ class OrderControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
-                .andExpect(jsonPath("$.message").value("회원 인덱스 아이디는 필수 입력 값입니다."));
+                .andExpect(jsonPath("$.message").value("주문하는 회원 인덱스 아이디는 필수 입력 값입니다."));
     }
 
     @Test
@@ -152,6 +153,74 @@ class OrderControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("PRODUCT_002"))
                 .andExpect(jsonPath("$.message").value("존재하지 않는 상품입니다"));
+    }
+
+    @Test
+    void 주문목록_조회성공() throws Exception {
+        // given
+        List<OrderItemResponse> items = List.of(
+                new OrderItemResponse(10L, "radio", 50000, 2, 100000)
+        );
+        List<OrderResponse> responses = List.of(
+                new OrderResponse(1L, "test1234", OrderStatus.CREATED, 100000, items, Instant.now())
+        );
+
+        given(orderService.getOrders(any())).willReturn(responses);
+
+        // when & then
+        mockMvc.perform(get("/orders")
+                        .param("memberId", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].orderId").value(1L))
+                .andExpect(jsonPath("$[0].nickname").value("test1234"))
+                .andExpect(jsonPath("$[0].status").value("CREATED"))
+                .andExpect(jsonPath("$[0].totalAmount").value(100000))
+                .andExpect(jsonPath("$[0].orderItems.length()").value(1))
+                .andExpect(jsonPath("$[0].orderItems[0].productId").value(10L))
+                .andExpect(jsonPath("$[0].orderItems[0].productName").value("radio"));
+    }
+
+    @Test
+    void 주문목록_상태필터_조회성공() throws Exception {
+        // given
+        List<OrderItemResponse> items = List.of(
+                new OrderItemResponse(10L, "radio", 50000, 1, 50000)
+        );
+        List<OrderResponse> responses = List.of(
+                new OrderResponse(1L, "test1234", OrderStatus.CREATED, 50000, items, Instant.now())
+        );
+
+        given(orderService.getOrders(any())).willReturn(responses);
+
+        // when & then
+        mockMvc.perform(get("/orders")
+                        .param("memberId", "1")
+                        .param("status", "CREATED"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].status").value("CREATED"));
+    }
+
+    @Test
+    void 주문목록_날짜범위_필터조회_성공() throws Exception {
+        // given
+        List<OrderItemResponse> items = List.of(
+                new OrderItemResponse(10L, "radio", 50000, 1, 50000)
+        );
+        List<OrderResponse> responses = List.of(
+                new OrderResponse(1L, "test1234", OrderStatus.CREATED, 50000, items, Instant.now())
+        );
+
+        given(orderService.getOrders(any())).willReturn(responses);
+
+        // when & then
+        mockMvc.perform(get("/orders")
+                        .param("memberId", "1")
+                        .param("startDate", "2025-01-01T00:00:00Z")
+                        .param("endDate", "2025-12-31T23:59:59Z"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1));
     }
 
     @Test

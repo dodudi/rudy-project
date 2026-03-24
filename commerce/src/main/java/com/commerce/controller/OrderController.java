@@ -3,6 +3,7 @@ package com.commerce.controller;
 import com.commerce.dto.OrderCreateRequest;
 import com.commerce.dto.OrderCreateResponse;
 import com.commerce.dto.OrderFilterRequest;
+import com.commerce.dto.OrderResponse;
 import com.commerce.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class OrderController {
     }
 
     @GetMapping
-    public ResponseEntity<List<OrderCreateResponse>> getOrders(@ModelAttribute OrderFilterRequest filter) {
+    public ResponseEntity<List<OrderResponse>> getOrders(@ModelAttribute OrderFilterRequest filter) {
         return ResponseEntity.ok(orderService.getOrders(filter));
     }
 }
