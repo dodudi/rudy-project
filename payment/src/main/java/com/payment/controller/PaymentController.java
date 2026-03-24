@@ -1,5 +1,6 @@
 package com.payment.controller;
 
+import com.payment.dto.PaymentFilterRequest;
 import com.payment.dto.PaymentRequest;
 import com.payment.dto.PaymentResponse;
 import com.payment.dto.RefundRequest;
@@ -7,10 +8,8 @@ import com.payment.service.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -34,5 +33,12 @@ public class PaymentController {
     ) {
         return paymentService.refund(request)
                 .map(ResponseEntity::ok);
+    }
+
+    @GetMapping
+    public Flux<PaymentResponse> getPayments(
+            @Valid @ModelAttribute PaymentFilterRequest filter
+    ) {
+        return paymentService.getPayments(filter);
     }
 }

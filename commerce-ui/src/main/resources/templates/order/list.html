@@ -77,13 +77,13 @@
     </div>
     <div>
         <label for="startDate">시작일</label>
-        <input id="startDate" type="datetime-local" name="startDate"
-               th:value="${filter.startDate != null ? #strings.replace(filter.startDate, 'Z', '') : ''}">
+        <input id="startDate" type="datetime-local">
+        <input type="hidden" id="startDateHidden" name="startDate" th:value="${filter.startDate}">
     </div>
     <div>
         <label for="endDate">종료일</label>
-        <input id="endDate" type="datetime-local" name="endDate"
-               th:value="${filter.endDate != null ? #strings.replace(filter.endDate, 'Z', '') : ''}">
+        <input id="endDate" type="datetime-local">
+        <input type="hidden" id="endDateHidden" name="endDate" th:value="${filter.endDate}">
     </div>
     <div>
         <button type="submit">검색</button>
@@ -163,13 +163,39 @@
     });
 
     // 필터 날짜: 로컬 datetime-local 입력값 → ISO 8601(UTC) 변환 후 전송
+    function isoToLocalInput(isoStr) {
+        const d = new Date(isoStr);
+        const y = d.getFullYear();
+        const mo = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const h = String(d.getHours()).padStart(2, '0');
+        const mi = String(d.getMinutes()).padStart(2, '0');
+        return `${y}-${mo}-${day}T${h}:${mi}`;
+    }
+
+    ['startDate', 'endDate'].forEach(id => {
+        const hidden = document.getElementById(id + 'Hidden');
+        if (hidden && hidden.value) {
+            document.getElementById(id).value = isoToLocalInput(hidden.value);
+        }
+    });
+
+    function setIsoDate(pickerId, hiddenId) {
+        const picker = document.getElementById(pickerId);
+        const hidden = document.getElementById(hiddenId);
+        if (picker.value) {
+            const [date, time] = picker.value.split('T');
+            const [y, mo, d] = date.split('-').map(Number);
+            const [h, mi] = time.split(':').map(Number);
+            hidden.value = new Date(y, mo - 1, d, h, mi).toISOString();
+        } else {
+            hidden.value = '';
+        }
+    }
+
     document.querySelector('.filter-form').addEventListener('submit', function () {
-        ['startDate', 'endDate'].forEach(id => {
-            const input = document.getElementById(id);
-            if (input.value) {
-                input.value = new Date(input.value).toISOString();
-            }
-        });
+        setIsoDate('startDate', 'startDateHidden');
+        setIsoDate('endDate', 'endDateHidden');
     });
 
     function openRefundModal(orderId) {
