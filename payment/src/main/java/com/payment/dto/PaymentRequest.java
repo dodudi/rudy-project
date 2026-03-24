@@ -11,6 +11,8 @@ public record PaymentRequest(
         @NotNull(message = "주문ID는 필수 값입니다.")
         Long orderId,
 
+        Long memberId,
+
         @NotBlank(message = "토스 전송용 주문ID는 필수입니다.")
         String tossOrderId,
 

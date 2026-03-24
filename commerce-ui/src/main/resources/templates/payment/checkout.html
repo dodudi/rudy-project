@@ -39,6 +39,7 @@
 <script th:inline="javascript">
     const clientKey = [[${clientKey}]];
     const orderId = String([[${order.orderId}]]);
+    const memberId = String([[${order.memberId}]]);
     const amount = [[${order.totalAmount}]];
     const orderName = [[${order.orderItems[0].productName}]];
 
@@ -52,7 +53,7 @@
                 currency: 'KRW',
                 value: amount
             },
-            orderId: orderId + '-' + Date.now(),
+            orderId: orderId + '-' + memberId + '-' + Date.now(),
             orderName: orderName,
             successUrl: window.location.origin + '/payment/success',
             failUrl: window.location.origin + '/payment/fail'

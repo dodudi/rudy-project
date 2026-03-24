@@ -34,9 +34,9 @@ public class OrderClient {
                 .uri(uriBuilder -> uriBuilder
                         .path("/orders")
                         .queryParamIfPresent("memberId", java.util.Optional.ofNullable(filter.getMemberId()))
-                        .queryParamIfPresent("status", java.util.Optional.ofNullable(filter.getStatus()))
-                        .queryParamIfPresent("startDate", java.util.Optional.ofNullable(filter.getStartDate()))
-                        .queryParamIfPresent("endDate", java.util.Optional.ofNullable(filter.getEndDate()))
+                        .queryParamIfPresent("status", java.util.Optional.ofNullable(filter.getStatus()).filter(s -> !s.isBlank()))
+                        .queryParamIfPresent("startDate", java.util.Optional.ofNullable(filter.getStartDate()).filter(s -> !s.isBlank()))
+                        .queryParamIfPresent("endDate", java.util.Optional.ofNullable(filter.getEndDate()).filter(s -> !s.isBlank()))
                         .build())
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});

@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS payments (
     id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     order_id    BIGINT       NOT NULL,
+    member_id   BIGINT,
     payment_id  VARCHAR(100) NOT NULL,
     payment_key VARCHAR(200) NOT NULL,
     amount      INT          NOT NULL,

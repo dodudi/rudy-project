@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.payment.config.TossPaymentClient;
 import com.payment.domain.Outbox;
 import com.payment.domain.Payment;
+import com.payment.dto.PaymentFilterRequest;
 import com.payment.dto.PaymentRequest;
 import com.payment.dto.PaymentResponse;
 import com.payment.dto.RefundRequest;
@@ -16,8 +17,11 @@ import com.payment.repository.OutboxRepository;
 import com.payment.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.payment.repository.PaymentCriteria;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
@@ -32,6 +36,7 @@ public class PaymentService {
     private final TossPaymentClient tossPaymentClient;
     private final ObjectMapper objectMapper;
     private final ReactiveRedisTemplate<String, String> reactiveRedisTemplate;
+    private final R2dbcEntityTemplate r2dbcEntityTemplate;
 
     private static final String LOCK_PREFIX = "payment:lock:";
     private static final Duration LOCK_TTL = Duration.ofMinutes(10);
@@ -64,6 +69,7 @@ public class PaymentService {
     private Mono<Payment> savePaymentWithEvent(PaymentRequest request, PaymentResultEvent event) {
         Payment payment = Payment.builder()
                 .orderId(request.orderId())
+                .memberId(request.memberId())
                 .paymentKey(request.paymentKey())
                 .paymentId(request.tossOrderId())
                 .amount(request.amount())
@@ -102,5 +108,10 @@ public class PaymentService {
         } catch (JsonProcessingException e) {
             return Mono.error(e);
         }
+    }
+
+    public Flux<PaymentResponse> getPayments(PaymentFilterRequest filter) {
+        return r2dbcEntityTemplate.select(PaymentCriteria.withFilters(filter), Payment.class)
+                .map(PaymentResponse::from);
     }
 }

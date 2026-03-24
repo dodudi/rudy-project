@@ -21,6 +21,8 @@ public class Payment {
 
     private Long orderId;
 
+    private Long memberId;
+
     private String paymentId;
 
     private String paymentKey;
@@ -33,13 +35,15 @@ public class Payment {
     private Instant createdAt;
 
     @Builder
-    private Payment(Long orderId, String paymentKey, String paymentId, int amount) {
+    private Payment(Long orderId, Long memberId, String paymentKey, String paymentId, int amount) {
         Assert.notNull(orderId, "Payment 주문ID는 필수 값입니다.");
+        Assert.notNull(memberId, "회원ID는 필수 값입니다.");
         Assert.notNull(paymentId, "Payment 토스주문ID는 필수 값입니다.");
         Assert.hasText(paymentKey, "Payment 토스주문KEY는 필수 값입니다.");
         Assert.isTrue(amount >= 0, "구매금액은 0 이상이어야 합니다.");
 
         this.orderId = orderId;
+        this.memberId = memberId;
         this.amount = amount;
         this.paymentId = paymentId;
         this.paymentKey = paymentKey;
