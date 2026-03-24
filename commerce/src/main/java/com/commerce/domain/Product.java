@@ -65,10 +65,35 @@ public class Product {
         this.stock = stock;
     }
 
+    public void update(String name, String description, Integer price, Integer stock) {
+        if (name != null) {
+            Assert.hasText(name, "상품 이름은 필수 입력 값입니다.");
+            Assert.isTrue(name.length() >= 2 && name.length() <= 20, "상품 이름은 2자 이상 20자 이하로 입력해야 합니다.");
+            Assert.isTrue(name.matches("^[a-zA-Z0-9가-힣]*$"), "상품 이름에 특수문자를 포함할 수 없습니다.");
+            this.name = name;
+        }
+
+        if (description != null) {
+            Assert.isTrue(description.length() <= 500, "상품 설명은 최대 500자까지 입력 가능합니다.");
+            this.description = description;
+        }
+
+        if (price != null) {
+            Assert.isTrue(price >= 0 && price <= 100_000_000, "상품 가격은 0원 이상 1억 원 이하만 가능합니다.");
+            this.price = price;
+        }
+
+        if (stock != null) {
+            Assert.isTrue(stock >= 0 && stock <= 10_000_000, "재고 수량은 0개 이상 1,000만 개 이하만 가능합니다.");
+            this.stock = stock;
+        }
+    }
+
     public void decreaseStock(int quantity) {
         if (this.stock < quantity) {
             throw new InsufficientStockException(ErrorCode.INSUFFICIENT_STOCK);
         }
         this.stock -= quantity;
     }
+
 }

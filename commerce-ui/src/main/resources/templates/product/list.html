@@ -29,6 +29,7 @@
         .btn-search { padding: 7px 18px; background: #1976d2; color: white; border: none; border-radius: 4px; font-size: 0.9rem; cursor: pointer; }
         .btn-search:hover { background: #1565c0; }
         .btn-reset  { padding: 7px 12px; background: #eee; color: #333; border: none; border-radius: 4px; font-size: 0.9rem; cursor: pointer; text-decoration: none; }
+        .btn-edit { padding: 4px 10px; background: #1976d2; color: white; text-decoration: none; border-radius: 4px; font-size: 0.8rem; }
     </style>
 </head>
 <body>
@@ -76,6 +77,7 @@
             <th>설명</th>
             <th>가격</th>
             <th>재고</th>
+            <th>수정</th>
         </tr>
     </thead>
     <tbody>
@@ -86,6 +88,7 @@
             <td th:text="${product.description}"></td>
             <td class="number" th:text="${#numbers.formatInteger(product.price, 0, 'COMMA')} + '원'"></td>
             <td class="number" th:text="${#numbers.formatInteger(product.stock, 0, 'COMMA')}"></td>
+            <td><a th:href="@{/products/{id}/edit(id=${product.id})}" class="btn-edit">수정</a></td>
         </tr>
     </tbody>
 </table>
