@@ -3,7 +3,7 @@ package com.commerce.service;
 import com.commerce.domain.Member;
 import com.commerce.domain.Product;
 import com.commerce.dto.ProductCreateRequest;
-import com.commerce.dto.ProductCreateResponse;
+import com.commerce.dto.ProductResponse;
 import com.commerce.exception.DuplicateException;
 import com.commerce.exception.NotFoundException;
 import com.commerce.repository.MemberRepository;
@@ -14,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,7 +55,7 @@ class ProductServiceTest {
         ProductCreateRequest request = new ProductCreateRequest(memberId, name, description, price, stock);
 
         // when
-        ProductCreateResponse product = productService.createProduct(request);
+        ProductResponse product = productService.createProduct(request);
 
         // then
         Assertions.assertThat(product.name()).isEqualTo(name);

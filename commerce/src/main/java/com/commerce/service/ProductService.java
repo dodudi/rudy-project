@@ -3,8 +3,9 @@ package com.commerce.service;
 import com.commerce.domain.Member;
 import com.commerce.domain.Product;
 import com.commerce.dto.ProductCreateRequest;
-import com.commerce.dto.ProductCreateResponse;
 import com.commerce.dto.ProductFilterRequest;
+import com.commerce.dto.ProductResponse;
+import com.commerce.dto.ProductUpdateRequest;
 import com.commerce.exception.CommerceException;
 import com.commerce.exception.DuplicateException;
 import com.commerce.exception.ErrorCode;
@@ -26,7 +27,7 @@ public class ProductService {
     private final MemberRepository memberRepository;
 
     @Transactional
-    public ProductCreateResponse createProduct(ProductCreateRequest request) {
+    public ProductResponse createProduct(ProductCreateRequest request) {
 
         if (productRepository.existsByName(request.name())) {
             throw new DuplicateException(ErrorCode.DUPLICATE_PRODUCT_NAME);
@@ -43,17 +44,33 @@ public class ProductService {
                 .stock(request.stock())
                 .build());
 
-        return ProductCreateResponse.from(product);
+        return ProductResponse.from(product);
     }
 
     @Transactional(readOnly = true)
-    public List<ProductCreateResponse> getProducts(ProductFilterRequest filter) {
+    public ProductResponse getProduct(Long id) {
+        return productRepository.findById(id)
+                .map(ProductResponse::from)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.NOTFOUND_PRODUCT));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductResponse> getProducts(ProductFilterRequest filter) {
         if (filter.minPrice() > 0 && filter.maxPrice() > 0 && filter.minPrice() > filter.maxPrice()) {
             throw new CommerceException(ErrorCode.INVALID_PRICE_RANGE);
         }
 
         return productRepository.findAll(ProductSpecification.withFilters(filter)).stream()
-                .map(ProductCreateResponse::from)
+                .map(ProductResponse::from)
                 .toList();
+    }
+
+    @Transactional
+    public ProductResponse updateProduct(Long id, ProductUpdateRequest request) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.NOTFOUND_PRODUCT));
+
+        product.update(request.name(), request.description(), request.price(), request.stock());
+        return ProductResponse.from(product);
     }
 }
