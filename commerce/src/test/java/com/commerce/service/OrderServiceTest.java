@@ -1,6 +1,7 @@
 package com.commerce.service;
 
 import com.commerce.domain.Member;
+import com.commerce.domain.Order;
 import com.commerce.domain.OrderStatus;
 import com.commerce.domain.Product;
 import com.commerce.dto.OrderCreateRequest;
@@ -8,10 +9,12 @@ import com.commerce.dto.OrderCreateResponse;
 import com.commerce.dto.OrderFilterRequest;
 import com.commerce.dto.OrderResponse;
 import com.commerce.event.PaymentRequestEvent;
+import com.commerce.exception.CommerceException;
 import com.commerce.exception.EmptyException;
 import com.commerce.exception.InsufficientStockException;
 import com.commerce.exception.NotFoundException;
 import com.commerce.repository.MemberRepository;
+import com.commerce.repository.OrderRepository;
 import com.commerce.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,6 +42,9 @@ class OrderServiceTest {
 
     @Autowired
     private MemberRepository memberRepository;
+
+    @Autowired
+    private OrderRepository orderRepository;
 
     @MockitoBean
     private KafkaTemplate<String, PaymentRequestEvent> kafkaTemplate;
@@ -223,6 +229,66 @@ class OrderServiceTest {
 
         // then
         assertThat(orders).hasSize(1);
+    }
+
+    @Test
+    void 주문취소_성공() {
+        // given
+        OrderCreateResponse created = orderService.createOrder(new OrderCreateRequest(member.getId(), List.of(
+                new OrderCreateRequest.OrderItem(radioProduct.getId(), 10)
+        )));
+
+        // when
+        orderService.cancelOrder(created.orderId());
+
+        // then
+        Order order = orderRepository.findById(created.orderId()).orElseThrow();
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
+    }
+
+    @Test
+    void 주문취소_재고복구_성공() {
+        // given
+        int orderQuantity = 100;
+        int initialStock = radioProduct.getStock();
+
+        OrderCreateResponse created = orderService.createOrder(new OrderCreateRequest(member.getId(), List.of(
+                new OrderCreateRequest.OrderItem(radioProduct.getId(), orderQuantity)
+        )));
+        assertThat(radioProduct.getStock()).isEqualTo(initialStock - orderQuantity);
+
+        // when
+        orderService.cancelOrder(created.orderId());
+
+        // then
+        assertThat(radioProduct.getStock()).isEqualTo(initialStock);
+    }
+
+    @Test
+    void 주문취소_존재하지않는_주문_에러발생() {
+        // given
+        Long nonExistentOrderId = -1L;
+
+        // when & then
+        assertThatThrownBy(() -> orderService.cancelOrder(nonExistentOrderId))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("존재하지 않는 주문입니다");
+    }
+
+    @Test
+    void 주문취소_CREATED가_아닌_상태_에러발생() {
+        // given
+        OrderCreateResponse created = orderService.createOrder(new OrderCreateRequest(member.getId(), List.of(
+                new OrderCreateRequest.OrderItem(radioProduct.getId(), 1)
+        )));
+
+        Order order = orderRepository.findById(created.orderId()).orElseThrow();
+        order.updateStatus(OrderStatus.COMPLETED);
+
+        // when & then
+        assertThatThrownBy(() -> orderService.cancelOrder(created.orderId()))
+                .isInstanceOf(CommerceException.class)
+                .hasMessageContaining("취소 가능한 주문 상태가 아닙니다");
     }
 
     @Test

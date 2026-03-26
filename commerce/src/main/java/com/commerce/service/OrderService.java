@@ -75,4 +75,28 @@ public class OrderService {
                 .map(OrderResponse::from)
                 .toList();
     }
+
+    @Retryable(
+            retryFor = PessimisticLockingFailureException.class,
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 100, multiplier = 2)
+    )
+    @Transactional
+    public void cancelOrder(Long orderId) {
+        Order order = orderRepository.findWithItemsAndLockById(orderId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.NOTFOUND_ORDER));
+
+        order.cancel();
+
+        List<Long> productIds = order.getOrderItems().stream()
+                .map(item -> item.getProduct().getId())
+                .toList();
+
+        Map<Long, Product> productMap = productRepository.findAllWithLockByIds(productIds).stream()
+                .collect(Collectors.toMap(Product::getId, product -> product));
+
+        for (var item : order.getOrderItems()) {
+            productMap.get(item.getProduct().getId()).increaseStock(item.getQuantity());
+        }
+    }
 }

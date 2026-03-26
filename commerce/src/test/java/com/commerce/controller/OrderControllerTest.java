@@ -5,6 +5,7 @@ import com.commerce.dto.OrderCreateRequest;
 import com.commerce.dto.OrderCreateResponse;
 import com.commerce.dto.OrderItemResponse;
 import com.commerce.dto.OrderResponse;
+import com.commerce.exception.CommerceException;
 import com.commerce.exception.ErrorCode;
 import com.commerce.exception.InsufficientStockException;
 import com.commerce.exception.NotFoundException;
@@ -22,6 +23,8 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -221,6 +224,42 @@ class OrderControllerTest {
                         .param("endDate", "2025-12-31T23:59:59Z"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1));
+    }
+
+    @Test
+    void 주문취소_성공() throws Exception {
+        // given
+        doNothing().when(orderService).cancelOrder(1L);
+
+        // when & then
+        mockMvc.perform(post("/orders/1/cancel"))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void 주문취소_존재하지않는_주문_에러발생() throws Exception {
+        // given
+        doThrow(new NotFoundException(ErrorCode.NOTFOUND_ORDER))
+                .when(orderService).cancelOrder(999L);
+
+        // when & then
+        mockMvc.perform(post("/orders/999/cancel"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("ORDER_001"))
+                .andExpect(jsonPath("$.message").value("존재하지 않는 주문입니다"));
+    }
+
+    @Test
+    void 주문취소_취소불가상태_에러발생() throws Exception {
+        // given
+        doThrow(new CommerceException(ErrorCode.INVALID_ORDER_STATUS))
+                .when(orderService).cancelOrder(1L);
+
+        // when & then
+        mockMvc.perform(post("/orders/1/cancel"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("ORDER_002"))
+                .andExpect(jsonPath("$.message").value("취소 가능한 주문 상태가 아닙니다"));
     }
 
     @Test
