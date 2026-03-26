@@ -3,6 +3,7 @@ package com.commerce.controller;
 import com.commerce.dto.WalletCreateRequest;
 import com.commerce.dto.WalletFilterRequest;
 import com.commerce.dto.WalletResponse;
+import com.commerce.dto.WalletTransactionRequest;
 import com.commerce.service.WalletService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,5 +31,21 @@ public class WalletController {
             @Valid @ModelAttribute WalletFilterRequest filter
     ) {
         return ResponseEntity.ok(walletService.getWallets(filter));
+    }
+
+    @PatchMapping("/{id}/deposit")
+    public ResponseEntity<WalletResponse> deposit(
+            @PathVariable Long id,
+            @Valid @RequestBody WalletTransactionRequest request
+    ) {
+        return ResponseEntity.ok(walletService.deposit(id, request));
+    }
+
+    @PatchMapping("/{id}/withdraw")
+    public ResponseEntity<WalletResponse> withdraw(
+            @PathVariable Long id,
+            @Valid @RequestBody WalletTransactionRequest request
+    ) {
+        return ResponseEntity.ok(walletService.withdraw(id, request));
     }
 }
