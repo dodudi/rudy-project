@@ -3,6 +3,7 @@ package com.commerce.service;
 import com.commerce.domain.Member;
 import com.commerce.domain.Wallet;
 import com.commerce.dto.WalletCreateRequest;
+import com.commerce.dto.WalletFilterRequest;
 import com.commerce.dto.WalletResponse;
 import com.commerce.exception.DuplicateException;
 import com.commerce.exception.NotFoundException;
@@ -14,6 +15,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Transactional
 @SpringBootTest
@@ -111,6 +114,62 @@ class WalletServiceTest {
         Assertions.assertThatThrownBy(() -> walletService.createWallet(request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("1억 원 이하만 가능합니다");
+    }
+
+    @Test
+    void 잔고조회_성공_잔액있는_지갑만_반환() {
+        // given
+        Member member2 = memberRepository.save(Member.builder()
+                .username("username2").password("@testpassword1234").nickname("nickname2").build());
+
+        walletRepository.save(Wallet.builder().member(member).balance(10000L).build());
+        walletRepository.save(Wallet.builder().member(member2).balance(0L).build());
+
+        WalletFilterRequest filter = new WalletFilterRequest(null, true);
+
+        // when
+        List<WalletResponse> result = walletService.getWallets(filter);
+
+        // then
+        Assertions.assertThat(result).isNotEmpty();
+        Assertions.assertThat(result).allMatch(w -> w.balance() > 0);
+    }
+
+    @Test
+    void 잔고조회_성공_잔액없는_지갑만_반환() {
+        // given
+        Member member2 = memberRepository.save(Member.builder()
+                .username("username2").password("@testpassword1234").nickname("nickname2").build());
+
+        walletRepository.save(Wallet.builder().member(member).balance(10000L).build());
+        walletRepository.save(Wallet.builder().member(member2).balance(0L).build());
+
+        WalletFilterRequest filter = new WalletFilterRequest(null, false);
+
+        // when
+        List<WalletResponse> result = walletService.getWallets(filter);
+
+        // then
+        Assertions.assertThat(result).isNotEmpty();
+        Assertions.assertThat(result).allMatch(w -> w.balance() == 0);
+    }
+
+    @Test
+    void 잔고조회_성공_전체_반환() {
+        // given
+        Member member2 = memberRepository.save(Member.builder()
+                .username("username2").password("@testpassword1234").nickname("nickname2").build());
+
+        walletRepository.save(Wallet.builder().member(member).balance(10000L).build());
+        walletRepository.save(Wallet.builder().member(member2).balance(0L).build());
+
+        WalletFilterRequest filter = new WalletFilterRequest(null, null);
+
+        // when
+        List<WalletResponse> result = walletService.getWallets(filter);
+
+        // then
+        Assertions.assertThat(result).hasSize(2);
     }
 
 }

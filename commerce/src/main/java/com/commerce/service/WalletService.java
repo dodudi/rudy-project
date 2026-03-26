@@ -3,15 +3,19 @@ package com.commerce.service;
 import com.commerce.domain.Member;
 import com.commerce.domain.Wallet;
 import com.commerce.dto.WalletCreateRequest;
+import com.commerce.dto.WalletFilterRequest;
 import com.commerce.dto.WalletResponse;
 import com.commerce.exception.DuplicateException;
 import com.commerce.exception.ErrorCode;
 import com.commerce.exception.NotFoundException;
 import com.commerce.repository.MemberRepository;
 import com.commerce.repository.WalletRepository;
+import com.commerce.repository.WalletSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -35,5 +39,11 @@ public class WalletService {
                 .build());
 
         return WalletResponse.from(wallet);
+    }
+
+    public List<WalletResponse> getWallets(WalletFilterRequest filter) {
+        return walletRepository.findAll(WalletSpecification.withFilter(filter))
+                .stream().map(WalletResponse::from)
+                .toList();
     }
 }
