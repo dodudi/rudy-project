@@ -29,4 +29,10 @@ public class OrderController {
     public ResponseEntity<List<OrderResponse>> getOrders(@ModelAttribute OrderFilterRequest filter) {
         return ResponseEntity.ok(orderService.getOrders(filter));
     }
+
+    @PostMapping("/{orderId}/cancel")
+    public ResponseEntity<Void> cancelOrder(@PathVariable Long orderId) {
+        orderService.cancelOrder(orderId);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import com.commerce.exception.CommerceException;
+import com.commerce.exception.ErrorCode;
 import org.springframework.util.Assert;
 
 import java.time.Instant;
@@ -64,6 +66,13 @@ public class Order {
 
     public void updateStatus(OrderStatus status) {
         this.status = status;
+    }
+
+    public void cancel() {
+        if (this.status != OrderStatus.CREATED) {
+            throw new CommerceException(ErrorCode.INVALID_ORDER_STATUS);
+        }
+        this.status = OrderStatus.CANCELLED;
     }
 
     public int getTotalAmount() {

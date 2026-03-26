@@ -3,6 +3,7 @@ package com.commerce.service;
 import com.commerce.domain.Member;
 import com.commerce.domain.Product;
 import com.commerce.dto.OrderCreateRequest;
+import com.commerce.dto.OrderCreateResponse;
 import com.commerce.repository.MemberRepository;
 import com.commerce.repository.OrderRepository;
 import com.commerce.repository.ProductRepository;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -112,6 +114,52 @@ public class OrderConcurrencyTest {
         Product updated = productRepository.findById(product.getId()).orElseThrow();
         assertThat(successCount.get() + failCount.get()).isEqualTo(threadCount);
         assertThat(updated.getStock()).isEqualTo(availableStock - orderQuantity * threadCount);
+    }
+
+    @Test
+    void 주문취소_재고복구_동시성_정합성_성공() throws InterruptedException {
+        // given
+        int threadCount = 100;
+        int orderQuantity = 1;
+        int initialStock = product.getStock();
+
+        List<Long> orderIds = new ArrayList<>();
+        for (int i = 0; i < threadCount; i++) {
+            OrderCreateResponse created = orderService.createOrder(new OrderCreateRequest(member.getId(), List.of(
+                    new OrderCreateRequest.OrderItem(product.getId(), orderQuantity)
+            )));
+            orderIds.add(created.orderId());
+        }
+
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch = new CountDownLatch(threadCount);
+        AtomicInteger successCount = new AtomicInteger(0);
+        AtomicInteger failCount = new AtomicInteger(0);
+
+        for (Long orderId : orderIds) {
+            executor.submit(() -> {
+                try {
+                    startLatch.await();
+                    orderService.cancelOrder(orderId);
+                    successCount.incrementAndGet();
+                } catch (Exception e) {
+                    failCount.incrementAndGet();
+                } finally {
+                    doneLatch.countDown();
+                }
+            });
+        }
+
+        startLatch.countDown();
+        doneLatch.await(30, TimeUnit.SECONDS);
+        executor.shutdown();
+
+        // then
+        log.info("successCount: {}, failCount: {}", successCount.get(), failCount.get());
+        Product updated = productRepository.findById(product.getId()).orElseThrow();
+        assertThat(successCount.get()).isEqualTo(threadCount);
+        assertThat(updated.getStock()).isEqualTo(initialStock);
     }
 
 }

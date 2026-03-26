@@ -14,7 +14,10 @@ public enum ErrorCode {
     NOTFOUND_PRODUCT(HttpStatus.BAD_REQUEST, "PRODUCT_002", "존재하지 않는 상품입니다"),
     INSUFFICIENT_STOCK(HttpStatus.BAD_REQUEST, "PRODUCT_003", "재고가 부족합니다"),
     EMPTY_PRODUCT(HttpStatus.BAD_REQUEST, "PRODUCT_004", "상품 정보가 비었습니다"),
-    INVALID_PRICE_RANGE(HttpStatus.BAD_REQUEST, "PRODUCT_005", "최소 가격은 최대 가격보다 클 수 없습니다");
+    INVALID_PRICE_RANGE(HttpStatus.BAD_REQUEST, "PRODUCT_005", "최소 가격은 최대 가격보다 클 수 없습니다"),
+
+    NOTFOUND_ORDER(HttpStatus.BAD_REQUEST, "ORDER_001", "존재하지 않는 주문입니다"),
+    INVALID_ORDER_STATUS(HttpStatus.BAD_REQUEST, "ORDER_002", "취소 가능한 주문 상태가 아닙니다");
 
     private final HttpStatus status;
     private final String code;
