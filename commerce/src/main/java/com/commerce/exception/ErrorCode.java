@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
     DUPLICATE_USERNAME(HttpStatus.CONFLICT, "USER_001", "이미 사용 중인 아이디입니다"),
     DUPLICATE_WALLET(HttpStatus.CONFLICT, "WALLET_001", "이미 잔고가 존재합니다"),
+    NOTFOUND_WALLET(HttpStatus.BAD_REQUEST, "WALLET_002", "존재하지 않는 잔고입니다"),
     NOTFOUND_USER(HttpStatus.BAD_REQUEST, "USER_002", "존재하지 않는 사용자입니다"),
 
     DUPLICATE_PRODUCT_NAME(HttpStatus.CONFLICT, "PRODUCT_001", "이미 사용 중인 상품 이름입니다"),

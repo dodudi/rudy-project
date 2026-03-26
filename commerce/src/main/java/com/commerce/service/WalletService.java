@@ -5,6 +5,7 @@ import com.commerce.domain.Wallet;
 import com.commerce.dto.WalletCreateRequest;
 import com.commerce.dto.WalletFilterRequest;
 import com.commerce.dto.WalletResponse;
+import com.commerce.dto.WalletTransactionRequest;
 import com.commerce.exception.DuplicateException;
 import com.commerce.exception.ErrorCode;
 import com.commerce.exception.NotFoundException;
@@ -45,5 +46,21 @@ public class WalletService {
         return walletRepository.findAll(WalletSpecification.withFilter(filter))
                 .stream().map(WalletResponse::from)
                 .toList();
+    }
+
+    @Transactional
+    public WalletResponse deposit(Long walletId, WalletTransactionRequest request) {
+        Wallet wallet = walletRepository.findByIdWithLock(walletId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.NOTFOUND_WALLET));
+        wallet.deposit(request.amount());
+        return WalletResponse.from(wallet);
+    }
+
+    @Transactional
+    public WalletResponse withdraw(Long walletId, WalletTransactionRequest request) {
+        Wallet wallet = walletRepository.findByIdWithLock(walletId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.NOTFOUND_WALLET));
+        wallet.withdraw(request.amount());
+        return WalletResponse.from(wallet);
     }
 }

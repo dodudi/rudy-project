@@ -5,6 +5,7 @@ import com.commerce.domain.Wallet;
 import com.commerce.dto.WalletCreateRequest;
 import com.commerce.dto.WalletFilterRequest;
 import com.commerce.dto.WalletResponse;
+import com.commerce.dto.WalletTransactionRequest;
 import com.commerce.exception.DuplicateException;
 import com.commerce.exception.NotFoundException;
 import com.commerce.repository.MemberRepository;
@@ -170,6 +171,78 @@ class WalletServiceTest {
 
         // then
         Assertions.assertThat(result).hasSize(2);
+    }
+
+    @Test
+    void 입금_성공() {
+        // given
+        Wallet wallet = walletRepository.save(Wallet.builder().member(member).balance(10000L).build());
+        WalletTransactionRequest request = new WalletTransactionRequest(5000L);
+
+        // when
+        WalletResponse result = walletService.deposit(wallet.getId(), request);
+
+        // then
+        Assertions.assertThat(result.balance()).isEqualTo(15000L);
+    }
+
+    @Test
+    void 입금_실패_한도초과() {
+        // given
+        Wallet wallet = walletRepository.save(Wallet.builder().member(member).balance(99_000_000L).build());
+        WalletTransactionRequest request = new WalletTransactionRequest(2_000_000L);
+
+        // when & then
+        Assertions.assertThatThrownBy(() -> walletService.deposit(wallet.getId(), request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("1억 원을 초과할 수 없습니다");
+    }
+
+    @Test
+    void 입금_실패_존재하지_않는_잔고() {
+        // given
+        WalletTransactionRequest request = new WalletTransactionRequest(5000L);
+
+        // when & then
+        Assertions.assertThatThrownBy(() -> walletService.deposit(9999L, request))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("존재하지 않는 잔고입니다");
+    }
+
+    @Test
+    void 출금_성공() {
+        // given
+        Wallet wallet = walletRepository.save(Wallet.builder().member(member).balance(10000L).build());
+        WalletTransactionRequest request = new WalletTransactionRequest(3000L);
+
+        // when
+        WalletResponse result = walletService.withdraw(wallet.getId(), request);
+
+        // then
+        Assertions.assertThat(result.balance()).isEqualTo(7000L);
+    }
+
+    @Test
+    void 출금_실패_잔고_부족() {
+        // given
+        Wallet wallet = walletRepository.save(Wallet.builder().member(member).balance(1000L).build());
+        WalletTransactionRequest request = new WalletTransactionRequest(5000L);
+
+        // when & then
+        Assertions.assertThatThrownBy(() -> walletService.withdraw(wallet.getId(), request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("잔고가 부족합니다");
+    }
+
+    @Test
+    void 출금_실패_존재하지_않는_잔고() {
+        // given
+        WalletTransactionRequest request = new WalletTransactionRequest(5000L);
+
+        // when & then
+        Assertions.assertThatThrownBy(() -> walletService.withdraw(9999L, request))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("존재하지 않는 잔고입니다");
     }
 
 }

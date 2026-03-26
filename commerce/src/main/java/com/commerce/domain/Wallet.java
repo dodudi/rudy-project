@@ -44,4 +44,16 @@ public class Wallet {
         this.member = member;
         this.balance = balance;
     }
+
+    public void deposit(long amount) {
+        Assert.isTrue(amount > 0, "입금 금액은 0원 초과이어야 합니다.");
+        Assert.isTrue(this.balance + amount <= 100_000_000, "잔고는 1억 원을 초과할 수 없습니다.");
+        this.balance += amount;
+    }
+
+    public void withdraw(long amount) {
+        Assert.isTrue(amount > 0, "출금 금액은 0원 초과이어야 합니다.");
+        Assert.isTrue(this.balance >= amount, "잔고가 부족합니다.");
+        this.balance -= amount;
+    }
 }

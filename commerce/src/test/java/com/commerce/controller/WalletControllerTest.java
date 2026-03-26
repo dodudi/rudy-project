@@ -2,6 +2,7 @@ package com.commerce.controller;
 
 import com.commerce.dto.WalletCreateRequest;
 import com.commerce.dto.WalletResponse;
+import com.commerce.dto.WalletTransactionRequest;
 import com.commerce.service.WalletService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -87,5 +89,87 @@ class WalletControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("잔고 금액은 0원 이상 1억 원 이하만 가능합니다"));
+    }
+
+    @Test
+    void 입금_성공() throws Exception {
+        // given
+        WalletTransactionRequest request = new WalletTransactionRequest(5000L);
+        WalletResponse response = new WalletResponse(1L, "testnick", 15000L);
+        given(walletService.deposit(any(), any())).willReturn(response);
+
+        // when & then
+        mockMvc.perform(patch("/wallets/1/deposit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.balance").value(15000L));
+    }
+
+    @Test
+    void 입금_금액_누락() throws Exception {
+        // given
+        WalletTransactionRequest request = new WalletTransactionRequest(null);
+
+        // when & then
+        mockMvc.perform(patch("/wallets/1/deposit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("금액은 필수 값입니다"));
+    }
+
+    @Test
+    void 입금_금액_음수() throws Exception {
+        // given
+        WalletTransactionRequest request = new WalletTransactionRequest(-1L);
+
+        // when & then
+        mockMvc.perform(patch("/wallets/1/deposit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("금액은 0원 초과이어야 합니다"));
+    }
+
+    @Test
+    void 출금_성공() throws Exception {
+        // given
+        WalletTransactionRequest request = new WalletTransactionRequest(3000L);
+        WalletResponse response = new WalletResponse(1L, "testnick", 7000L);
+        given(walletService.withdraw(any(), any())).willReturn(response);
+
+        // when & then
+        mockMvc.perform(patch("/wallets/1/withdraw")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.balance").value(7000L));
+    }
+
+    @Test
+    void 출금_금액_누락() throws Exception {
+        // given
+        WalletTransactionRequest request = new WalletTransactionRequest(null);
+
+        // when & then
+        mockMvc.perform(patch("/wallets/1/withdraw")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("금액은 필수 값입니다"));
+    }
+
+    @Test
+    void 출금_금액_음수() throws Exception {
+        // given
+        WalletTransactionRequest request = new WalletTransactionRequest(-1L);
+
+        // when & then
+        mockMvc.perform(patch("/wallets/1/withdraw")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("금액은 0원 초과이어야 합니다"));
     }
 }
