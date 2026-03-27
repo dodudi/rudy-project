@@ -100,5 +100,6 @@ bin/
 /nbdist/
 /.nb-gradle/
 
+CLAUDE.md
 docker/redis-data
 docker/postgresql-data
