@@ -83,4 +83,6 @@ orders ||--o{ order_items : ""
 products ||--o{ order_items : ""
 members ||--o| wallets : ""
 members ||--o{ member_coupons : ""
+coupons ||--o{ member_coupons : ""
+coupons ||--o{ redeem_codes : ""
 ```
