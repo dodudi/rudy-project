@@ -68,8 +68,19 @@ member_coupons{
   timestamptz created_at
   timestamptz updated_at 
 }
+
+redeem_codes{
+  long id PK
+  long coupon_id FK
+  String code
+  String status
+  timestamptz created_at
+  timestamptz updated_at 
+}
+
 members ||--o{ products : ""
 orders ||--o{ order_items : ""
 products ||--o{ order_items : ""
 members ||--o| wallets : ""
+members ||--o{ member_coupons : ""
 ```
