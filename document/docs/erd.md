@@ -53,7 +53,7 @@ coupons{
   String name
   String discount_type
   String discount_value
-  int minimum_order_amount
+  int minimum_purchase_amount
   int max_discount_amount
   timestamptz expires_at
   timestamptz created_at
@@ -64,6 +64,7 @@ member_coupons{
   long id PK
   int member_id FK
   long coupon_id FK
+  long redeem_code_id FK
   String status
   timestamptz created_at
   timestamptz updated_at 
@@ -82,7 +83,8 @@ members ||--o{ products : ""
 orders ||--o{ order_items : ""
 products ||--o{ order_items : ""
 members ||--o| wallets : ""
+coupons ||--o{ redeem_codes : ""
 members ||--o{ member_coupons : ""
 coupons ||--o{ member_coupons : ""
-coupons ||--o{ redeem_codes : ""
+redeem_codes ||--o| member_coupons : ""
 ```
