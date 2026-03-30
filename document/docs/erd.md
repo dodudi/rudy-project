@@ -1,38 +1,38 @@
 ```mermaid
-erDiagram
-
-members{
-  long id PK
-  String username
-  String password
-  String nickname
+erDiagram                                                                                                                                                                                                                     members {
+  bigint id PK
+  varchar username UK
+  varchar password
+  varchar nickname
   timestamptz created_at
   timestamptz updated_at
 }
 
-products{
-  long id PK
-  int member_id FK
-  String name
-  String description
+products {
+  bigint id PK
+  bigint member_id FK
+  varchar name UK
+  varchar description
   int price
   int stock
   timestamptz created_at
   timestamptz updated_at
 }
 
-orders{
-  long id PK
-  int member_id FK
-  String status
+orders {
+  bigint id PK
+  bigint member_id FK
+  bigint member_coupon_id FK "nullable"
+  int discount_amount
+  varchar status
   timestamptz created_at
   timestamptz updated_at
 }
 
-order_items{
-  long id PK
-  int order_id FK
-  int product_id fk
+order_items {
+  bigint id PK
+  bigint order_id FK
+  bigint product_id FK
   int price
   int quantity
   int amount
@@ -40,51 +40,76 @@ order_items{
   timestamptz updated_at
 }
 
-wallets{
-  long id PK
-  int member_id FK
-  int balance
+wallets {
+  bigint id PK
+  bigint member_id FK
+  bigint balance
   timestamptz created_at
-  timestamptz updated_at 
+  timestamptz updated_at
 }
 
-coupons{
-  long id PK
-  String name
-  String discount_type
-  String discount_value
+carts {
+  bigint id PK
+  bigint member_id FK
+  timestamptz created_at
+  timestamptz updated_at
+}
+
+cart_items {
+  bigint id PK
+  bigint cart_id FK
+  bigint product_id FK
+  int quantity
+  int price
+  int amount
+  timestamptz created_at
+  timestamptz updated_at
+}
+
+coupons {
+  bigint id PK
+  varchar name UK
+  varchar discount_type
+  int discount_value
   int minimum_purchase_amount
-  int max_discount_amount
+  int maximum_discount_amount
   timestamptz expires_at
   timestamptz created_at
   timestamptz updated_at
 }
 
-member_coupons{
-  long id PK
-  int member_id FK
-  long coupon_id FK
-  long redeem_code_id FK
-  String status
+redeem_codes {
+  bigint id PK
+  bigint coupon_id FK
+  varchar code UK
+  varchar status "AVAILABLE, CLAIMED"
   timestamptz created_at
-  timestamptz updated_at 
+  timestamptz updated_at
 }
 
-redeem_codes{
-  long id PK
-  long coupon_id FK
-  String code
-  String status
+member_coupons {
+  bigint id PK
+  bigint member_id FK
+  bigint coupon_id FK
+  bigint redeem_code_id FK
+  varchar status "ACTIVE, USED, EXPIRED"
+  timestamptz used_at "nullable"
   timestamptz created_at
-  timestamptz updated_at 
+  timestamptz updated_at
 }
 
-members ||--o{ products : ""
+members ||--o{ products : "판매"
+members ||--o{ orders : "주문"
+members ||--o| wallets : "잔고"
+members ||--o{ carts : "장바구니"
+members ||--o{ member_coupons : "쿠폰 보유"
 orders ||--o{ order_items : ""
+orders }o--o| member_coupons : "쿠폰 적용"
 products ||--o{ order_items : ""
-members ||--o| wallets : ""
+products ||--o{ cart_items : ""
+carts ||--o{ cart_items : ""
 coupons ||--o{ redeem_codes : ""
-members ||--o{ member_coupons : ""
 coupons ||--o{ member_coupons : ""
 redeem_codes ||--o| member_coupons : ""
+
 ```
