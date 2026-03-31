@@ -1,5 +1,5 @@
 package com.commerce.domain;
 
 public enum OrderStatus {
-    CREATED, COMPLETED, SETTLED, CANCELLED, FAILED
+    CREATED, COMPLETED, SETTLED, CANCELLED, FAILED, REFUNDED
 }
