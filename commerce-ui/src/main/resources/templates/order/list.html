@@ -32,6 +32,8 @@
         .btn-reset:hover { background: #ddd !important; }
         .btn-refund { padding: 4px 10px; background: #ef5350; color: white; border: none; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
         .btn-refund:hover { background: #c62828; }
+        .btn-cancel { padding: 4px 10px; background: #757575; color: white; border: none; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
+        .btn-cancel:hover { background: #424242; }
         .alert { padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; font-size: 0.9rem; }
         .alert-success { background: #e8f5e9; color: #2e7d32; }
         .alert-error   { background: #ffebee; color: #b71c1c; }
@@ -47,6 +49,7 @@
         .modal-actions button { padding: 6px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
         .btn-cancel-modal { background: #eee; color: #333; }
         .btn-confirm-refund { background: #ef5350; color: white; }
+        .btn-confirm-cancel { background: #757575; color: white; }
     </style>
 </head>
 <body>
@@ -100,7 +103,7 @@
             <th>주문 상품</th>
             <th>합계</th>
             <th>주문 일시</th>
-            <th>환불</th>
+            <th>처리</th>
         </tr>
     </thead>
     <tbody>
@@ -124,6 +127,9 @@
                 <button th:if="${order.status == 'COMPLETED'}"
                         class="btn-refund"
                         th:attr="onclick='openRefundModal(' + ${order.orderId} + ')'">환불</button>
+                <button th:if="${order.status == 'CREATED'}"
+                        class="btn-cancel"
+                        th:attr="onclick='openCancelModal(' + ${order.orderId} + ')'">취소</button>
             </td>
         </tr>
     </tbody>
@@ -133,6 +139,20 @@
 
 <br>
 <a href="/" class="home">← 홈으로</a>
+
+<!-- 취소 확인 모달 -->
+<div id="cancelModal" class="modal-backdrop">
+    <div class="modal">
+        <h2>주문 취소</h2>
+        <p style="margin: 0 0 16px; font-size: 0.9rem; color: #555;">취소하면 재고가 복구되며 되돌릴 수 없습니다.</p>
+        <form id="cancelForm" method="post">
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel-modal" onclick="closeCancelModal()">닫기</button>
+                <button type="submit" class="btn-confirm-cancel">취소 확인</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <!-- 환불 모달 -->
 <div id="refundModal" class="modal-backdrop">
@@ -196,6 +216,19 @@
     document.querySelector('.filter-form').addEventListener('submit', function () {
         setIsoDate('startDate', 'startDateHidden');
         setIsoDate('endDate', 'endDateHidden');
+    });
+
+    function openCancelModal(orderId) {
+        document.getElementById('cancelForm').action = '/orders/' + orderId + '/cancel';
+        document.getElementById('cancelModal').classList.add('open');
+    }
+
+    function closeCancelModal() {
+        document.getElementById('cancelModal').classList.remove('open');
+    }
+
+    document.getElementById('cancelModal').addEventListener('click', function(e) {
+        if (e.target === this) closeCancelModal();
     });
 
     function openRefundModal(orderId) {

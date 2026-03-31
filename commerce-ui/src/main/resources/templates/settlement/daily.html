@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>일별 정산</title>
+    <style>
+        body { font-family: sans-serif; max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+        h1 { font-size: 1.5rem; margin-bottom: 8px; }
+        .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #eee; vertical-align: top; }
+        th { background: #f5f5f5; font-size: 0.9rem; }
+        td.number { text-align: right; }
+        .status { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; }
+        .status-COMPLETED { background: #e8f5e9; color: #2e7d32; }
+        .empty { text-align: center; padding: 40px; color: #999; }
+        a.home { font-size: 0.85rem; color: #888; text-decoration: none; }
+        a.home:hover { text-decoration: underline; }
+        .filter-form { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 20px; padding: 16px; background: #f9f9f9; border-radius: 6px; }
+        .filter-form label { font-size: 0.8rem; color: #555; display: block; margin-bottom: 4px; }
+        .filter-form input { padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem; }
+        .filter-form button { padding: 7px 16px; background: #1976d2; color: white; border: none; border-radius: 4px; font-size: 0.9rem; cursor: pointer; }
+        .filter-form button:hover { background: #1565c0; }
+        .btn-reset { padding: 7px 16px; border-radius: 4px; text-decoration: none; font-size: 0.9rem; background: #eee; color: #333; }
+        .trigger-section { margin-bottom: 20px; padding: 16px; background: #e3f2fd; border-radius: 6px; border-left: 4px solid #1976d2; }
+        .trigger-section h3 { margin: 0 0 12px; font-size: 0.95rem; color: #1565c0; }
+        .trigger-form { display: flex; gap: 12px; align-items: flex-end; }
+        .trigger-form label { font-size: 0.8rem; color: #555; display: block; margin-bottom: 4px; }
+        .trigger-form input { padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem; }
+        .btn-trigger { padding: 7px 16px; background: #388e3c; color: white; border: none; border-radius: 4px; font-size: 0.9rem; cursor: pointer; }
+        .btn-trigger:hover { background: #2e7d32; }
+        .alert-success { padding: 12px 16px; background: #e8f5e9; color: #2e7d32; border-radius: 4px; margin-bottom: 16px; border: 1px solid #a5d6a7; }
+        .alert-error { padding: 12px 16px; background: #ffebee; color: #b71c1c; border-radius: 4px; margin-bottom: 16px; border: 1px solid #ef9a9a; }
+    </style>
+</head>
+<body>
+
+<div class="top">
+    <div>
+        <a class="home" th:href="@{/}">← 홈</a>
+        <h1>일별 정산</h1>
+    </div>
+    <a th:href="@{/settlement/records}" style="font-size:0.9rem; color:#1976d2; text-decoration:none;">← 정산 원장</a>
+</div>
+
+<div th:if="${success}" class="alert-success" th:text="${success}"></div>
+<div th:if="${error}" class="alert-error" th:text="${error}"></div>
+
+<div class="trigger-section">
+    <h3>정산 배치 실행</h3>
+    <form method="post" th:action="@{/settlement/trigger}" class="trigger-form">
+        <div>
+            <label for="triggerDate">정산 기준일</label>
+            <input id="triggerDate" type="date" name="settlementDate"
+                   th:value="${settlementDate != null && !settlementDate.isEmpty() ? settlementDate : #temporals.format(#temporals.createToday().minusDays(1), 'yyyy-MM-dd')}">
+        </div>
+        <button type="submit" class="btn-trigger">배치 실행</button>
+    </form>
+</div>
+
+<form method="get" th:action="@{/settlement/daily}" class="filter-form">
+    <div>
+        <label for="sellerId">판매자 ID</label>
+        <input id="sellerId" type="number" name="sellerId" placeholder="판매자 ID"
+               th:value="${sellerId}">
+    </div>
+    <div>
+        <label for="settlementDate">정산일</label>
+        <input id="settlementDate" type="date" name="settlementDate"
+               th:value="${settlementDate}">
+    </div>
+    <div>
+        <button type="submit">검색</button>
+        <a th:href="@{/settlement/daily}" class="btn-reset">초기화</a>
+    </div>
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>판매자 ID</th>
+            <th>정산일</th>
+            <th>주문 건수</th>
+            <th>총 정산금액</th>
+            <th>상태</th>
+            <th>생성일시</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:if="${#lists.isEmpty(dailySettlements)}">
+            <td colspan="7" class="empty">일별 정산 내역이 없습니다.</td>
+        </tr>
+        <tr th:each="ds : ${dailySettlements}">
+            <td th:text="${ds.id}"></td>
+            <td th:text="${ds.sellerId}"></td>
+            <td th:text="${ds.settlementDate}"></td>
+            <td class="number" th:text="${#numbers.formatInteger(ds.orderCount, 0, 'COMMA')} + '건'"></td>
+            <td class="number" th:text="${#numbers.formatInteger(ds.totalAmount, 0, 'COMMA')} + '원'"></td>
+            <td>
+                <span class="status"
+                      th:classappend="'status-' + ${ds.status}"
+                      th:text="${ds.status}"></span>
+            </td>
+            <td class="local-time" th:attr="data-utc=${ds.createdAt}"></td>
+        </tr>
+    </tbody>
+</table>
+
+<script>
+    document.querySelectorAll('.local-time').forEach(td => {
+        const utc = td.dataset.utc;
+        if (utc) {
+            td.textContent = new Date(utc).toLocaleString(undefined, {
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            });
+        }
+    });
+</script>
+
+</body>
+</html>

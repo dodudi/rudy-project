@@ -22,11 +22,12 @@ public class PaymentClient {
         this.restClient = restClient;
     }
 
-    public void confirmPayment(String paymentKey, Long orderId, Long memberId, String tossOrderId, int amount) {
+    public void confirmPayment(String paymentKey, Long orderId, Long memberId, Long sellerId, String tossOrderId, int amount) {
         Map<String, Object> body = new HashMap<>();
         body.put("paymentKey", paymentKey);
         body.put("orderId", orderId);
         body.put("memberId", memberId);
+        body.put("sellerId", sellerId);
         body.put("tossOrderId", tossOrderId);
         body.put("amount", amount);
         restClient.post()

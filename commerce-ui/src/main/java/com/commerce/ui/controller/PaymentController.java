@@ -42,7 +42,8 @@ public class PaymentController {
         String[] parts = orderId.split("-");
         Long parsedOrderId = Long.parseLong(parts[0]);
         Long parsedMemberId = parts.length > 1 ? Long.parseLong(parts[1]) : null;
-        paymentClient.confirmPayment(paymentKey, parsedOrderId, parsedMemberId, orderId, amount);
+        Long parsedSellerId = parts.length > 2 ? Long.parseLong(parts[2]) : null;
+        paymentClient.confirmPayment(paymentKey, parsedOrderId, parsedMemberId, parsedSellerId, orderId, amount);
         model.addAttribute("paymentKey", paymentKey);
         model.addAttribute("orderId", parsedOrderId);
         model.addAttribute("amount", amount);

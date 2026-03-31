@@ -9,6 +9,7 @@ import java.util.List;
 public record OrderCreateResponse(
         Long orderId,
         Long memberId,
+        Long sellerId,
         OrderStatus status,
         int totalAmount,
         List<OrderItemResponse> orderItems,
@@ -29,6 +30,7 @@ public record OrderCreateResponse(
         return new OrderCreateResponse(
                 order.getId(),
                 order.getMember().getId(),
+                order.getSellerId(),
                 order.getStatus(),
                 totalAmount,
                 items,

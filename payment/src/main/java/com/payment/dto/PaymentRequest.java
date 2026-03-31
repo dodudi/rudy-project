@@ -13,6 +13,8 @@ public record PaymentRequest(
 
         Long memberId,
 
+        Long sellerId,
+
         @NotBlank(message = "토스 전송용 주문ID는 필수입니다.")
         String tossOrderId,
 

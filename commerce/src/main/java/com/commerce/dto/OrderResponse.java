@@ -8,6 +8,7 @@ import java.util.List;
 
 public record OrderResponse(
         Long orderId,
+        Long sellerId,
         String nickname,
         OrderStatus status,
         int totalAmount,
@@ -18,6 +19,6 @@ public record OrderResponse(
         List<OrderItemResponse> items = order.getOrderItems().stream()
                 .map(OrderItemResponse::from)
                 .toList();
-        return new OrderResponse(order.getId(), order.getMember().getNickname(), order.getStatus(), order.getTotalAmount(), items, order.getCreatedAt());
+        return new OrderResponse(order.getId(), order.getSellerId(), order.getMember().getNickname(), order.getStatus(), order.getTotalAmount(), items, order.getCreatedAt());
     }
 }

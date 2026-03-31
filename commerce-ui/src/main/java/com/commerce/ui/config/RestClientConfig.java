@@ -25,4 +25,13 @@ public class RestClientConfig {
                 .baseUrl(baseUrl + prefix)
                 .build();
     }
+
+    @Bean("settlementRestClient")
+    public RestClient settlementRestClient(
+            @Value("${settlement.api.url}") String baseUrl,
+            @Value("${settlement.api.prefix}") String prefix) {
+        return RestClient.builder()
+                .baseUrl(baseUrl + prefix)
+                .build();
+    }
 }

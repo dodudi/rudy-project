@@ -29,6 +29,13 @@ public class OrderClient {
                 .body(OrderResponse.class);
     }
 
+    public void cancelOrder(Long orderId) {
+        restClient.post()
+                .uri("/orders/{orderId}/cancel", orderId)
+                .retrieve()
+                .toBodilessEntity();
+    }
+
     public List<OrderResponse> getOrders(OrderFilterRequest filter) {
         return restClient.get()
                 .uri(uriBuilder -> uriBuilder

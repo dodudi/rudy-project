@@ -76,6 +76,17 @@ public class OrderController {
         }
     }
 
+    @PostMapping("/{orderId}/cancel")
+    public String cancel(@PathVariable Long orderId, RedirectAttributes redirectAttributes) {
+        try {
+            orderClient.cancelOrder(orderId);
+            redirectAttributes.addFlashAttribute("message", "주문이 취소되었습니다.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "주문 취소 중 오류가 발생했습니다: " + e.getMessage());
+        }
+        return "redirect:/orders";
+    }
+
     @PostMapping("/{orderId}/refund")
     public String refund(@PathVariable Long orderId,
                          @RequestParam(defaultValue = "") String reason,

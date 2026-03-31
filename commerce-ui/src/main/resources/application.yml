@@ -15,6 +15,11 @@ payment:
     url: http://localhost:8080
     prefix: /api/payment
 
+settlement:
+  api:
+    url: http://localhost:8080
+    prefix: /api/settlement
+
 toss:
   client-key: ${CLIENT_KEY}
   secret-key: ${SECRET_KEY}

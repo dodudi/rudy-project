@@ -13,6 +13,7 @@ import com.commerce.exception.NotFoundException;
 import com.commerce.repository.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -24,6 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -64,6 +66,15 @@ public class OrderService {
             product.decreaseStock(item.quantity());
             order.addOrderItem(product, item.quantity());
         }
+
+        Long sellerId = order.getOrderItems().stream()
+                .findFirst()
+                .map(item -> item.getProduct().getMember().getId())
+                .orElse(null);
+        if (sellerId == null) {
+            log.warn("sellerId를 확인할 수 없습니다. memberId={}", request.memberId());
+        }
+        order.setSellerId(sellerId);
 
         Order saved = orderRepository.save(order);
         return OrderCreateResponse.from(saved);

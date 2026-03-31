@@ -42,9 +42,12 @@ public class PaymentService {
     private static final Duration LOCK_TTL = Duration.ofMinutes(10);
 
     public Mono<PaymentResponse> payment(PaymentRequest request) {
+        if (request.sellerId() == null) {
+            log.warn("sellerId가 누락된 결제 요청입니다. orderId={}", request.orderId());
+        }
         return acquireLock(request.orderId())
                 .then(Mono.defer(() -> tossPaymentClient.confirm(request)))
-                .flatMap(tossResponse -> savePaymentWithEvent(request, PaymentResultEvent.completed(request.orderId())))
+                .flatMap(tossResponse -> savePaymentWithEvent(request, PaymentResultEvent.completed(request.orderId(), request.sellerId(), request.paymentKey(), request.amount())))
                 .map(PaymentResponse::from)
                 .onErrorResume(TossPaymentException.class, e ->
                         savePaymentWithEvent(request, PaymentResultEvent.failed(request.orderId(), e.getMessage()))
@@ -70,6 +73,7 @@ public class PaymentService {
         Payment payment = Payment.builder()
                 .orderId(request.orderId())
                 .memberId(request.memberId())
+                .sellerId(request.sellerId())
                 .paymentKey(request.paymentKey())
                 .paymentId(request.tossOrderId())
                 .amount(request.amount())
@@ -101,7 +105,7 @@ public class PaymentService {
 
     private Mono<Payment> saveRefundWithEvent(Payment payment) {
         try {
-            String payload = objectMapper.writeValueAsString(PaymentResultEvent.refunded(payment.getOrderId()));
+            String payload = objectMapper.writeValueAsString(PaymentResultEvent.refunded(payment.getOrderId(), payment.getSellerId(), payment.getPaymentKey(), payment.getAmount()));
             return paymentRepository.save(payment)
                     .flatMap(saved -> outboxRepository.save(Outbox.builder().topic("payment.result").payload(payload).build())
                             .thenReturn(saved));

@@ -34,6 +34,9 @@ public class Order {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
 
+    @Column(name = "seller_id")
+    private Long sellerId;
+
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
@@ -66,6 +69,10 @@ public class Order {
 
     public void updateStatus(OrderStatus status) {
         this.status = status;
+    }
+
+    public void setSellerId(Long sellerId) {
+        this.sellerId = sellerId;
     }
 
     public void cancel() {

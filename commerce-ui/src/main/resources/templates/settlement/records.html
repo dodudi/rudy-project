@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>정산 원장</title>
+    <style>
+        body { font-family: sans-serif; max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        h1 { font-size: 1.5rem; margin-bottom: 8px; }
+        .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #eee; vertical-align: top; }
+        th { background: #f5f5f5; font-size: 0.9rem; }
+        td.number { text-align: right; }
+        .status { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; }
+        .status-PENDING   { background: #fff8e1; color: #f57f17; }
+        .status-SETTLED   { background: #e8f5e9; color: #2e7d32; }
+        .status-CANCELLED { background: #ffebee; color: #b71c1c; }
+        .empty { text-align: center; padding: 40px; color: #999; }
+        a.home { font-size: 0.85rem; color: #888; text-decoration: none; }
+        a.home:hover { text-decoration: underline; }
+        .filter-form { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 20px; padding: 16px; background: #f9f9f9; border-radius: 6px; }
+        .filter-form label { font-size: 0.8rem; color: #555; display: block; margin-bottom: 4px; }
+        .filter-form input, .filter-form select { padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem; }
+        .filter-form button { padding: 7px 16px; background: #1976d2; color: white; border: none; border-radius: 4px; font-size: 0.9rem; cursor: pointer; }
+        .filter-form button:hover { background: #1565c0; }
+        .btn-reset { padding: 7px 16px; border-radius: 4px; text-decoration: none; font-size: 0.9rem; background: #eee; color: #333; }
+        .key-cell { font-size: 0.8rem; color: #666; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    </style>
+</head>
+<body>
+
+<div class="top">
+    <div>
+        <a class="home" th:href="@{/}">← 홈</a>
+        <h1>정산 원장</h1>
+    </div>
+    <a th:href="@{/settlement/daily}" style="font-size:0.9rem; color:#1976d2; text-decoration:none;">일별 정산 →</a>
+</div>
+
+<form method="get" th:action="@{/settlement/records}" class="filter-form">
+    <div>
+        <label for="sellerId">판매자 ID</label>
+        <input id="sellerId" type="number" name="sellerId" placeholder="판매자 ID"
+               th:value="${filter.sellerId}">
+    </div>
+    <div>
+        <label for="status">상태</label>
+        <select id="status" name="status">
+            <option value="">전체</option>
+            <option value="PENDING"   th:selected="${filter.status == 'PENDING'}">대기</option>
+            <option value="SETTLED"   th:selected="${filter.status == 'SETTLED'}">정산완료</option>
+            <option value="CANCELLED" th:selected="${filter.status == 'CANCELLED'}">취소</option>
+        </select>
+    </div>
+    <div>
+        <label for="startDate">정산일 시작</label>
+        <input id="startDate" type="date" name="startDate" th:value="${filter.startDate}">
+    </div>
+    <div>
+        <label for="endDate">정산일 종료</label>
+        <input id="endDate" type="date" name="endDate" th:value="${filter.endDate}">
+    </div>
+    <div>
+        <button type="submit">검색</button>
+        <a th:href="@{/settlement/records}" class="btn-reset">초기화</a>
+    </div>
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>주문 ID</th>
+            <th>판매자 ID</th>
+            <th>결제 키</th>
+            <th>결제 금액</th>
+            <th>상태</th>
+            <th>정산일</th>
+            <th>정산완료일시</th>
+            <th>생성일시</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:if="${#lists.isEmpty(records)}">
+            <td colspan="9" class="empty">정산 원장이 없습니다.</td>
+        </tr>
+        <tr th:each="record : ${records}">
+            <td th:text="${record.id}"></td>
+            <td th:text="${record.orderId}"></td>
+            <td th:text="${record.sellerId}"></td>
+            <td class="key-cell" th:text="${record.paymentKey}" th:title="${record.paymentKey}"></td>
+            <td class="number" th:text="${#numbers.formatInteger(record.grossAmount, 0, 'COMMA')} + '원'"></td>
+            <td>
+                <span class="status"
+                      th:classappend="'status-' + ${record.status}"
+                      th:text="${record.status}"></span>
+            </td>
+            <td th:text="${record.settlementDate}"></td>
+            <td class="local-time" th:attr="data-utc=${record.settledAt}"></td>
+            <td class="local-time" th:attr="data-utc=${record.createdAt}"></td>
+        </tr>
+    </tbody>
+</table>
+
+<script>
+    document.querySelectorAll('.local-time').forEach(td => {
+        const utc = td.dataset.utc;
+        if (utc) {
+            td.textContent = new Date(utc).toLocaleString(undefined, {
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            });
+        }
+    });
+</script>
+
+</body>
+</html>
