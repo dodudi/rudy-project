@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Post {
+model post {
   id        String   @id @default(cuid())
   title     String
   content   String
@@ -19,7 +19,7 @@ model Post {
   updatedAt DateTime @updatedAt
 }
 
-model Draft {
+model draft {
   id       String   @id @default("draft")
   title    String   @default("")
   content  String   @default("")
@@ -29,7 +29,7 @@ model Draft {
   savedAt  DateTime @default(now()) @updatedAt
 }
 
-model Category {
+model category {
   id        String   @id @default(cuid())
   name      String   @unique
   createdAt DateTime @default(now())
