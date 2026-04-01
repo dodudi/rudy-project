@@ -83,15 +83,23 @@ export default function WriteForm({categories, postId, defaultValues}: Props) {
             setError('내용을 입력해주세요.');
             return;
         }
+        if (saveTimerRef.current) {
+            clearTimeout(saveTimerRef.current);
+            saveTimerRef.current = null;
+        }
         setError('');
         setLoading(true);
 
-        const data = {title: title.trim(), content, category, tags, image, date};
-        if (postId) {
-            await updatePost(postId, data);
-        } else {
-            await deleteDraft();
-            await createPost(data);
+        try {
+            const data = {title: title.trim(), content, category, tags, image, date};
+            if (postId) {
+                await updatePost(postId, data);
+            } else {
+                await deleteDraft();
+                await createPost(data);
+            }
+        } catch {
+            setLoading(false);
         }
     }
 

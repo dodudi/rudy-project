@@ -5,6 +5,8 @@
 :root {
     --background: #ffffff;
     --foreground: #171717;
+    --font-geist-sans: sans-serif;
+    --font-geist-mono: monospace;
 }
 
 @theme inline {
@@ -13,24 +15,6 @@
     --font-sans: var(--font-geist-sans);
     --font-mono: var(--font-geist-mono);
 }
-
-/* 코드 블록 내부의 기본 prose 스타일 무효화 */
-/*.prose pre {*/
-/*  background-color: transparent !important;*/
-/*  padding: 0 !important;*/
-/*  margin: 0 !important;*/
-/*}*/
-
-/*.prose code {*/
-/*  color: inherit !important;*/
-/*  background-color: transparent !important;*/
-/*  font-weight: inherit !important;*/
-/*}*/
-
-/*.prose code::before,*/
-/*.prose code::after {*/
-/*  content: "" !important; !* 백틱(``) 제거 *!*/
-/*}*/
 
 body {
     background: var(--background);
@@ -46,6 +30,21 @@ body {
 .milkdown-wrap .milkdown {
     background: transparent;
     font-family: var(--font-geist-sans), sans-serif;
+}
+
+/* 읽기 전용 모드 */
+.milkdown-readonly .milkdown .ProseMirror {
+    padding: 0;
+    min-height: unset;
+    cursor: default;
+}
+
+/* 읽기 전용 모드에서 블록 핸들 숨김 */
+.milkdown-readonly .block-handle,
+.milkdown-readonly .crepe-block-handle,
+.milkdown-readonly [data-milkdown-crepe="block-handle"],
+.milkdown-readonly .milkdown-block-handle {
+    display: none !important;
 }
 
 .milkdown-wrap {
