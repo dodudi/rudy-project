@@ -3,7 +3,7 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import dynamic from 'next/dynamic';
 import {Category} from '@/types';
-import {createPost, updatePost} from '@/lib/actions/posts';
+import {createPost} from '@/lib/actions/posts';
 import {deleteDraft, saveDraft} from '@/lib/actions/draft';
 import Button from '@/components/ui/Button';
 import TagBadge from '@/components/ui/TagBadge';
@@ -22,11 +22,10 @@ interface DefaultValues {
 
 interface Props {
     categories: Category[];
-    postId?: string;
     defaultValues?: DefaultValues;
 }
 
-export default function WriteForm({categories, postId, defaultValues}: Props) {
+export default function WriteForm({categories, defaultValues}: Props) {
     const today = new Date().toISOString().slice(0, 10);
 
     const [title, setTitle] = useState(defaultValues?.title ?? '');
@@ -42,16 +41,15 @@ export default function WriteForm({categories, postId, defaultValues}: Props) {
     const fileRef = useRef<HTMLInputElement>(null);
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    // FR-07 자동 임시저장 (새 글 작성 시에만)
+    // FR-07 자동 임시저장
     const scheduleDraftSave = useCallback(() => {
-        if (postId) return;
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
         saveTimerRef.current = setTimeout(async () => {
             await saveDraft({title, content, category, tags, image});
             setDraftStatus('saved');
             setTimeout(() => setDraftStatus(null), 2000);
         }, 2000);
-    }, [postId, title, content, category, tags, image]);
+    }, [title, content, category, tags, image]);
 
     useEffect(() => {
         scheduleDraftSave();
@@ -91,13 +89,8 @@ export default function WriteForm({categories, postId, defaultValues}: Props) {
         setLoading(true);
 
         try {
-            const data = {title: title.trim(), content, category, tags, image, date};
-            if (postId) {
-                await updatePost(postId, data);
-            } else {
-                await deleteDraft();
-                await createPost(data);
-            }
+            await deleteDraft();
+            await createPost({title: title.trim(), content, category, tags, image, date});
         } catch {
             setLoading(false);
         }
@@ -128,9 +121,7 @@ export default function WriteForm({categories, postId, defaultValues}: Props) {
                 >
                     <option value="">카테고리 선택</option>
                     {categories.map((c) => (
-                        <option key={c.id} value={c.name}>
-                            {c.name}
-                        </option>
+                        <option key={c.id} value={c.name}>{c.name}</option>
                     ))}
                 </select>
 
@@ -174,15 +165,13 @@ export default function WriteForm({categories, postId, defaultValues}: Props) {
             <div className="flex flex-wrap items-center gap-2">
                 {tags.map((tag) => (
                     <span key={tag} className="flex items-center gap-1">
-            <TagBadge tag={tag}/>
-            <button
-                onClick={() => setTags(tags.filter((t) => t !== tag))}
-                className="text-zinc-400 hover:text-red-500 text-xs leading-none"
-                aria-label={`${tag} 태그 삭제`}
-            >
-              ×
-            </button>
-          </span>
+                        <TagBadge tag={tag}/>
+                        <button
+                            onClick={() => setTags(tags.filter((t) => t !== tag))}
+                            className="text-zinc-400 hover:text-red-500 text-xs leading-none"
+                            aria-label={`${tag} 태그 삭제`}
+                        >×</button>
+                    </span>
                 ))}
                 <input
                     type="text"
@@ -217,7 +206,6 @@ export default function WriteForm({categories, postId, defaultValues}: Props) {
             {/* Milkdown 에디터 */}
             <div aria-label="본문 내용">
                 <MilkdownEditor
-                    key={postId ?? 'new'}
                     defaultValue={defaultValues?.content ?? ''}
                     onChange={setContent}
                 />
@@ -225,9 +213,7 @@ export default function WriteForm({categories, postId, defaultValues}: Props) {
 
             {/* 글자 수 / 읽기 시간 */}
             <div className="flex items-center justify-between text-xs text-zinc-400">
-        <span>
-          {charCount.toLocaleString()}자 · 약 {minutes}분 읽기
-        </span>
+                <span>{charCount.toLocaleString()}자 · 약 {minutes}분 읽기</span>
                 {image && (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img src={image} alt="미리보기" className="w-10 h-10 object-cover rounded-md"/>
@@ -248,7 +234,7 @@ export default function WriteForm({categories, postId, defaultValues}: Props) {
                     취소
                 </Button>
                 <Button type="button" onClick={handleSubmit} disabled={loading}>
-                    {loading ? '저장 중...' : postId ? '수정 완료' : '게시하기'}
+                    {loading ? '저장 중...' : '게시하기'}
                 </Button>
             </div>
         </div>

@@ -35,7 +35,10 @@ export default function MilkdownEditor({defaultValue = '', onChange}: Props) {
                     onChangeRef.current?.(markdown);
                 });
             })
-            .create();
+            .create()
+            .catch(() => {
+                // destroy()가 create() 완료 전에 호출되면(React StrictMode) 에러 무시
+            });
 
         return () => {
             crepe.destroy();

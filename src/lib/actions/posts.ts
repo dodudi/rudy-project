@@ -28,24 +28,7 @@ export async function createPost(data: PostData) {
     redirect('/');
 }
 
-export async function updatePost(id: string, data: PostData) {
-    await prisma.post.update({
-        where: {id},
-        data: {
-            title: data.title,
-            content: data.content,
-            category: data.category,
-            tags: data.tags,
-            image: data.image,
-            date: data.date,
-        },
-    });
-    revalidatePath('/');
-    revalidatePath(`/post/${id}`);
-    redirect(`/post/${id}`);
-}
-
-// redirect 없이 업데이트만 수행 — PostDetail 인플레이스 편집용
+// PostDetail 인플레이스 편집용 — redirect 없이 업데이트만 수행
 export async function updatePostInPlace(id: string, data: PostData) {
     await prisma.post.update({
         where: {id},

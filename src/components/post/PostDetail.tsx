@@ -60,6 +60,8 @@ export default function PostDetail({post, categories}: Props) {
             if (destroyed) return;
             crepe.setReadonly(true);
             crepeRef.current = crepe;
+        }).catch(() => {
+            // destroy()가 create() 완료 전에 호출되면(React StrictMode) 에러 무시
         });
 
         return () => {
