@@ -5,6 +5,7 @@ import {summarize} from '@/lib/readingTime';
 import {postService} from '@/lib/services/postService';
 import {categoryService} from '@/lib/services/categoryService';
 import {NotFoundError} from '@/lib/errors';
+import {auth} from '@/auth';
 import PostDetailWrapper from './PostDetailWrapper';
 
 export const revalidate = 0;
@@ -65,5 +66,8 @@ export default async function PostPage({
         throw e;
     }
 
-    return <PostDetailWrapper post={post} categories={categories}/>;
+    const session = await auth();
+    const isAdmin = !!session?.user;
+
+    return <PostDetailWrapper post={post} categories={categories} isAdmin={isAdmin}/>;
 }

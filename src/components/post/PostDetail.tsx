@@ -14,9 +14,10 @@ import {readingTime} from '@/lib/readingTime';
 interface Props {
     post: Post;
     categories: Category[];
+    isAdmin: boolean;
 }
 
-export default function PostDetail({post, categories}: Props) {
+export default function PostDetail({post, categories, isAdmin}: Props) {
     const router = useRouter();
 
     const [isEditing, setIsEditing] = useState(false);
@@ -230,12 +231,12 @@ export default function PostDetail({post, categories}: Props) {
                                 {loading ? '저장 중...' : '저장'}
                             </Button>
                         </>
-                    ) : (
+                    ) : isAdmin ? (
                         <>
                             <Button variant="danger" onClick={handleDelete}>삭제</Button>
                             <Button variant="secondary" onClick={handleEdit}>수정</Button>
                         </>
-                    )}
+                    ) : null}
                 </div>
             </footer>
         </article>

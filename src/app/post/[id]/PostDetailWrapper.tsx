@@ -8,8 +8,9 @@ const PostDetail = dynamic(() => import('@/components/post/PostDetail'), {ssr: f
 interface Props {
     post: Post;
     categories: Category[];
+    isAdmin: boolean;
 }
 
-export default function PostDetailWrapper({post, categories}: Props) {
-    return <PostDetail post={post} categories={categories}/>;
+export default function PostDetailWrapper({post, categories, isAdmin}: Props) {
+    return <PostDetail post={post} categories={categories} isAdmin={isAdmin}/>;
 }
