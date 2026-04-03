@@ -58,4 +58,20 @@ export const postRepository = {
     async delete(id: string): Promise<void> {
         await prisma.post.delete({where: {id}});
     },
+
+    async findRelated(id: string, category: string, tags: string[]): Promise<Post[]> {
+        const rows = await prisma.post.findMany({
+            where: {
+                id: {not: id},
+                OR: [
+                    {category: category || undefined},
+                    {tags: {hasSome: tags}},
+                ],
+            },
+            orderBy: {createdAt: 'desc'},
+            take: 3,
+        });
+
+        return rows.map(mapPost);
+    }
 };

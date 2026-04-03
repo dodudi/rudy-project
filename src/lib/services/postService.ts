@@ -31,4 +31,8 @@ export const postService = {
         if (!existing) throw new NotFoundError(`Post not found: ${id}`);
         return postRepository.delete(id);
     },
+
+    async getRelated(id: string, category: string, tags: string[]): Promise<Post[]> {
+        return postRepository.findRelated(id, category, tags);
+    }
 };

@@ -14,10 +14,11 @@ import {readingTime} from '@/lib/readingTime';
 interface Props {
     post: Post;
     categories: Category[];
+    relatedPosts: Post[];
     isAdmin: boolean;
 }
 
-export default function PostDetail({post, categories, isAdmin}: Props) {
+export default function PostDetail({post, categories, relatedPosts, isAdmin}: Props) {
     const router = useRouter();
 
     const [isEditing, setIsEditing] = useState(false);
@@ -218,7 +219,21 @@ export default function PostDetail({post, categories, isAdmin}: Props) {
                 ref={containerRef}
                 className={`milkdown-wrap${isEditing ? '' : ' milkdown-readonly'}`}
             />
-
+            {relatedPosts.length > 0 && (
+                <section className="mt-12 border-t border-zinc-100 pt-6">
+                    <h2 className="text-sm font-medium text-zinc-500 mb-4">관련 글</h2>
+                    <ul className="space-y-3">
+                        {relatedPosts.map((p) => (
+                            <li key={p.id}>
+                                <a href={`/post/${p.id}`} className="block hover:text-zinc-600">
+                                    <p className="font-medium text-zinc-800">{p.title}</p>
+                                    <p className="text-xs text-zinc-400 mt-0.5">{p.date}</p>
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )}
             <footer className="mt-12 border-t border-zinc-100 pt-6 space-y-3">
                 {error && <p className="text-sm text-red-500 text-right">{error}</p>}
                 <div className="flex justify-end gap-3">

@@ -55,11 +55,13 @@ export default async function PostPage({
 
     let post: Awaited<ReturnType<typeof getPost>>;
     let categories: Awaited<ReturnType<typeof categoryService.getAll>>;
+    let relatedPosts: Awaited<ReturnType<typeof postService.getRelated>>;
 
     try {
-        [post, categories] = await Promise.all([
-            getPost(id),
+        post = await getPost(id);
+        [categories, relatedPosts] = await Promise.all([
             categoryService.getAll(),
+            postService.getRelated(post.id, post.category, post.tags),
         ]);
     } catch (e) {
         if (e instanceof NotFoundError) notFound();
@@ -69,5 +71,5 @@ export default async function PostPage({
     const session = await auth();
     const isAdmin = !!session?.user;
 
-    return <PostDetailWrapper post={post} categories={categories} isAdmin={isAdmin}/>;
+    return <PostDetailWrapper post={post} categories={categories} relatedPosts={relatedPosts} isAdmin={isAdmin}/>;
 }
