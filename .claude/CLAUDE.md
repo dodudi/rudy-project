@@ -110,12 +110,16 @@ src/
 │   ├── auth/
 │   │   ├── LoginForm.tsx                 # Client: credentials form, signIn(), error/loading state
 │   │   └── LogoutButton.tsx              # Client: signOut({ callbackUrl: "/" })
-│   ├── layout/Header.tsx                 # async Server Component: session-aware nav (admin vs guest)
+│   ├── layout/
+│   │   ├── Header.tsx                    # async Server Component: session-aware nav (admin vs guest) — max-w-[1000px]
+│   │   ├── ProfileCard.tsx               # Client: static profile card (avatar, bio, GitHub/email links + copy buttons) — sticky sidebar
+│   │   └── StatsCard.tsx                 # Server: blog stats widget (post/category/tag counts) — no extra queries, uses page.tsx data
 │   ├── post/
 │   │   ├── PostFeed.tsx                  # Client: search/category/tag filter via useMemo
 │   │   ├── PostList.tsx
 │   │   ├── PostCard.tsx                  # Search highlight
-│   │   └── PostDetail.tsx                # Detail view + in-place edit (PUT /api/posts/:id)
+│   │   ├── PostDetail.tsx                # Detail view + in-place edit (PUT /api/posts/:id) — includes ShareButtons, RelatedPosts
+│   │   └── ShareButtons.tsx              # Client: URL copy + X/LinkedIn/Reddit share — onClick reads window.location.href at click time
 │   ├── editor/
 │   │   ├── MilkdownEditor.tsx            # Milkdown Crepe wrapper (ssr: false)
 │   │   ├── WriteForm.tsx                 # New post form, 2s debounce auto-save draft
@@ -156,6 +160,35 @@ Three Prisma models: `Post`, `Draft`, `Category`.
 - `Draft` is a **single-row table** with a hardcoded `id = "draft"`. Saved via `upsert`, deleted via `deleteMany`. Only used during new post creation (not when editing existing posts).
 - `Post.tags` and `Draft.tags` are `String[]` (Postgres array). Repositories convert `createdAt`/`updatedAt`/`savedAt` from `Date` to ISO strings before returning.
 - `Post.image` and `Draft.image` are optional strings (stored as DataURL from file input).
+
+### Home page layout
+
+`app/page.tsx` uses a **2-column layout** at `lg` breakpoint (1024px+):
+
+```
+max-w-[1000px] (outer wrapper)
+├── aside (hidden below lg, w-[240px], sticky)
+│   ├── ProfileCard   — static profile info, Client Component (copy buttons)
+│   └── StatsCard     — post/category/tag counts, Server Component
+└── main (flex-1, min-w-0)
+    └── PostFeed
+```
+
+- On mobile/tablet (`< lg`): single column, sidebar hidden
+- `ProfileCard` is a **Client Component** (`'use client'`) solely for clipboard copy buttons
+- `StatsCard` is a **Server Component** — receives `postCount`, `categoryCount`, `tagCount` as props derived from data already fetched in `page.tsx` (no extra DB queries)
+- Header max-width is also `1000px` to align with the page layout
+
+### Post detail layout
+
+`/post/[id]` content order (top → bottom):
+1. Header metadata (category · reading time · title · date · tags)
+2. Milkdown editor (readonly mode)
+3. **ShareButtons** — URL copy + X / LinkedIn / Reddit (hidden in edit mode)
+4. **Related posts** — same category or tag, up to 3
+5. Footer — edit/delete buttons (admin only)
+
+`ShareButtons` reads `window.location.href` inside `onClick` handlers (not as `href` attribute) to avoid empty-URL race conditions during hydration.
 
 ### Pages and rendering strategy
 
