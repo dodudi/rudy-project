@@ -1,0 +1,33 @@
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: commerce-route
+              uri: lb://commerce
+              predicates:
+                - Path=/api/commerce/**
+              filters:
+                - StripPrefix=2
+
+            - id: payment-route
+              uri: lb://payment
+              predicates:
+                - Path=/api/payment/**
+              filters:
+                - StripPrefix=2
+
+            - id: settlement-route
+              uri: lb://settlement
+              predicates:
+                - Path=/api/settlement/**
+              filters:
+                - StripPrefix=2
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${ERUKA_HOST}:${ERUKA_PORT}/eureka/
+  instance:
+    prefer-ip-address: true
