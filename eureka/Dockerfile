@@ -13,7 +13,7 @@ COPY . .
 RUN gradle clean build -x test --no-daemon
 
 # ---------- runtime stage ----------
-FROM eclipse-temurin:21-jdk-jammy
+FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
 COPY --from=builder /app/build/libs/*.jar app.jar
