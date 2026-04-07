@@ -1,0 +1,14 @@
+commerce:
+  api:
+    url: http://${COMMERCE_HOST:localhost}:8081
+    prefix: ""
+
+payment:
+  api:
+    url: http://${PAYMENT_HOST:localhost}:8082
+    prefix: ""
+
+settlement:
+  api:
+    url: http://${SETTLEMENT_HOST:localhost}:8083
+    prefix: ""
