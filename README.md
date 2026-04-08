@@ -24,7 +24,7 @@ flowchart TD
     Browser["브라우저"]
 
     subgraph Docker Compose
-        subgraph Next.js App
+        subgraph nextjsapp ["Next.js App"]
             SC["Server Component\n(페이지)"]
             API["API Routes\n/api/**"]
             SA["Server Actions\ncreatePost · deletePost"]
