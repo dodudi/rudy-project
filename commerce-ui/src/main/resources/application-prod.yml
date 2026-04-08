@@ -1,14 +1,9 @@
 commerce:
   api:
-    url: http://${COMMERCE_HOST:localhost}:8081
-    prefix: ""
+    url: http://${GATEWAY_HOST}:8080
+    prefix: /api/commerce
 
 payment:
   api:
-    url: http://${PAYMENT_HOST:localhost}:8082
-    prefix: ""
-
-settlement:
-  api:
-    url: http://${SETTLEMENT_HOST:localhost}:8083
-    prefix: ""
+    url: http://${GATEWAY_HOST}:8080
+    prefix: /api/payment
