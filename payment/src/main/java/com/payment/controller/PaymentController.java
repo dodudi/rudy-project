@@ -4,6 +4,7 @@ import com.payment.dto.PaymentFilterRequest;
 import com.payment.dto.PaymentRequest;
 import com.payment.dto.PaymentResponse;
 import com.payment.dto.RefundRequest;
+import com.payment.dto.TestPaymentRequest;
 import com.payment.service.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,14 @@ public class PaymentController {
             @Valid @RequestBody PaymentRequest request
     ) {
         return paymentService.payment(request)
+                .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/test-confirm")
+    public Mono<ResponseEntity<PaymentResponse>> testConfirmPayment(
+            @Valid @RequestBody TestPaymentRequest request
+    ) {
+        return paymentService.testPayment(request)
                 .map(ResponseEntity::ok);
     }
 

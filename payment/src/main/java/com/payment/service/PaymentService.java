@@ -24,7 +24,10 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import com.payment.dto.TestPaymentRequest;
+
 import java.time.Duration;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -109,6 +112,33 @@ public class PaymentService {
             return paymentRepository.save(payment)
                     .flatMap(saved -> outboxRepository.save(Outbox.builder().topic("payment.result").payload(payload).build())
                             .thenReturn(saved));
+        } catch (JsonProcessingException e) {
+            return Mono.error(e);
+        }
+    }
+
+    public Mono<PaymentResponse> testPayment(TestPaymentRequest request) {
+        String fakePaymentKey = "test_" + UUID.randomUUID();
+        String fakeTossOrderId = request.orderId() + "-" + request.memberId();
+
+        Payment payment = Payment.builder()
+                .orderId(request.orderId())
+                .memberId(request.memberId())
+                .sellerId(request.sellerId())
+                .paymentKey(fakePaymentKey)
+                .paymentId(fakeTossOrderId)
+                .amount(request.amount())
+                .build()
+                .markCompleted();
+
+        PaymentResultEvent event = PaymentResultEvent.completed(request.orderId(), request.sellerId(), fakePaymentKey, request.amount());
+
+        try {
+            String payload = objectMapper.writeValueAsString(event);
+            return paymentRepository.save(payment)
+                    .flatMap(saved -> outboxRepository.save(Outbox.builder().topic("payment.result").payload(payload).build())
+                            .thenReturn(saved))
+                    .map(PaymentResponse::from);
         } catch (JsonProcessingException e) {
             return Mono.error(e);
         }
