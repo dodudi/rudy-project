@@ -46,7 +46,7 @@ flowchart TD
     SA -- "Service → Repository" --> DB
 
     GHA -- "main push → 빌드 & 푸시" --> Hub
-    Hub -- "docker compose pull" --> Next.js App
+    Hub -- "docker compose pull" --> nextjsapp
 ```
 
 ---
