@@ -38,3 +38,6 @@ out/
 
 ### COUSTOM ###
 PRD.md
+.env
+docker/postgres-data/*
+docker/redis-data/*
