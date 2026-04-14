@@ -1,0 +1,44 @@
+services:
+  postgresql:
+    image: postgres:14.2
+    container_name: postgresql
+    ports:
+      - "5432:5432"
+    command: postgres -c lock_timeout=5000
+    env_file:
+      - .env
+    restart: unless-stopped
+    volumes:
+      - ./postgresql-data:/var/lib/postgresql/data
+    networks:
+      - backend-net
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    env_file:
+      - .env
+    volumes:
+      - ./minio-data:/data
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    networks:
+      - backend-net
+  app:
+    image: ${DOCKERHUB_USERNAME}/blog-nextjs:latest
+    container_name: rudynote-app
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      - postgresql
+      - minio
+    networks:
+      - backend-net
+networks:
+  backend-net:
+    driver: bridge
