@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>주문 생성</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; }
+        h1 { font-size: 1.5rem; margin-bottom: 24px; }
+        h2 { font-size: 1rem; margin: 0 0 8px; color: #555; }
+        .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+        .info-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .info-table th, .info-table td { padding: 6px 10px; border: 1px solid #e0e0e0; text-align: left; }
+        .info-table th { background: #f5f5f5; }
+        .info-table tr { cursor: pointer; }
+        .info-table tr:hover { background: #fffde7; }
+        .info-table tr.selected { background: #e3f2fd; font-weight: bold; }
+        hr { border: none; border-top: 1px solid #eee; margin: 24px 0; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-weight: bold; margin-bottom: 4px; }
+        input[type=number], select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        .order-item { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
+        .order-item input, .order-item select { flex: 1; }
+        .order-item input[type=number][name$=".quantity"] { max-width: 80px; flex: none; }
+        .error { color: red; font-size: 0.85rem; margin-top: 4px; }
+        .alert-error { background: #ffe0e0; border: 1px solid #f99; padding: 12px; border-radius: 4px; margin-bottom: 16px; }
+        button { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-add { background: #eee; margin-bottom: 16px; }
+        .btn-remove { background: #f44; color: white; }
+        .btn-submit { background: #4caf50; color: white; font-size: 1rem; padding: 10px 24px; }
+        a.back { margin-left: 8px; padding: 10px 16px; background: #eee; border-radius: 4px; text-decoration: none; color: #333; }
+        .selected-member { font-size: 0.9rem; color: #1565c0; margin-top: 4px; }
+    </style>
+</head>
+<body>
+
+<h1>주문 생성</h1>
+
+<div th:if="${error}" class="alert-error" th:text="${error}"></div>
+
+<div class="layout">
+    <!-- 회원 목록 -->
+    <div>
+        <h2>회원 목록 (클릭하여 선택)</h2>
+        <table class="info-table" id="member-table">
+            <thead><tr><th>ID</th><th>아이디</th><th>닉네임</th></tr></thead>
+            <tbody>
+                <tr th:each="member : ${members}"
+                    th:data-id="${member.id}"
+                    th:data-name="${member.username}"
+                    onclick="selectMember(this)">
+                    <td th:text="${member.id}"></td>
+                    <td th:text="${member.username}"></td>
+                    <td th:text="${member.nickname}"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 상품 목록 -->
+    <div>
+        <h2>상품 목록 (클릭하여 추가)</h2>
+        <table class="info-table" id="product-table">
+            <thead><tr><th>ID</th><th>상품명</th><th>가격</th><th>재고</th></tr></thead>
+            <tbody>
+                <tr th:each="product : ${products}"
+                    th:data-id="${product.id}"
+                    th:data-name="${product.name}"
+                    onclick="addProduct(this)">
+                    <td th:text="${product.id}"></td>
+                    <td th:text="${product.name}"></td>
+                    <td th:text="${#numbers.formatInteger(product.price, 0, 'COMMA')} + '원'"></td>
+                    <td th:text="${#numbers.formatInteger(product.stock, 0, 'COMMA')}"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<hr>
+
+<form th:action="@{/orders}" th:object="${orderRequest}" method="post">
+
+    <div class="form-group">
+        <label>주문 회원</label>
+        <input type="hidden" id="memberId" th:field="*{memberId}">
+        <div id="selected-member" class="selected-member">
+            <span th:if="*{memberId}" th:text="'회원 ID: ' + *{memberId} + ' 선택됨'"></span>
+            <span th:unless="*{memberId}" style="color:#999">위 목록에서 회원을 클릭하여 선택하세요</span>
+        </div>
+        <div class="error" th:if="${#fields.hasErrors('memberId')}" th:errors="*{memberId}"></div>
+    </div>
+
+    <div class="form-group">
+        <label>주문 상품</label>
+        <div id="order-items">
+            <div th:each="item, stat : *{orderItems}" class="order-item"
+                 th:if="${item.productId != null}">
+                <input type="number"
+                       th:name="|orderItems[${stat.index}].productId|"
+                       th:value="${item.productId}"
+                       placeholder="상품 ID" readonly style="background:#f5f5f5">
+                <input type="number"
+                       th:name="|orderItems[${stat.index}].quantity|"
+                       th:value="${item.quantity}"
+                       placeholder="수량" min="1" style="max-width:80px">
+                <button type="button" class="btn-remove" onclick="removeItem(this)">삭제</button>
+            </div>
+        </div>
+        <div class="error" th:if="${#fields.hasErrors('orderItems')}" th:errors="*{orderItems}"></div>
+        <button type="button" class="btn-add" onclick="addItem()">+ 직접 입력</button>
+    </div>
+
+    <button type="submit" class="btn-submit">주문하기</button>
+    <a href="/" class="back">홈으로</a>
+
+</form>
+
+<script>
+    function selectMember(row) {
+        document.querySelectorAll('#member-table tbody tr').forEach(r => r.classList.remove('selected'));
+        row.classList.add('selected');
+        const id = row.dataset.id;
+        const name = row.dataset.name;
+        document.getElementById('memberId').value = id;
+        document.getElementById('selected-member').innerHTML = `<strong>${name}</strong> (ID: ${id}) 선택됨`;
+    }
+
+    function addProduct(row) {
+        const id = row.dataset.id;
+        const name = row.dataset.name;
+        const container = document.getElementById('order-items');
+        const index = container.children.length;
+        const div = document.createElement('div');
+        div.className = 'order-item';
+        div.innerHTML = `
+            <input type="number" name="orderItems[${index}].productId" value="${id}" placeholder="상품 ID" readonly style="background:#f5f5f5">
+            <input type="number" name="orderItems[${index}].quantity" value="1" placeholder="수량" min="1" style="max-width:80px">
+            <span style="line-height:36px;font-size:0.9rem;color:#555">${name}</span>
+            <button type="button" class="btn-remove" onclick="removeItem(this)">삭제</button>
+        `;
+        container.appendChild(div);
+        reindex();
+    }
+
+    function addItem() {
+        const container = document.getElementById('order-items');
+        const index = container.children.length;
+        const div = document.createElement('div');
+        div.className = 'order-item';
+        div.innerHTML = `
+            <input type="number" name="orderItems[${index}].productId" placeholder="상품 ID">
+            <input type="number" name="orderItems[${index}].quantity" value="1" placeholder="수량" min="1" style="max-width:80px">
+            <button type="button" class="btn-remove" onclick="removeItem(this)">삭제</button>
+        `;
+        container.appendChild(div);
+    }
+
+    function removeItem(btn) {
+        const container = document.getElementById('order-items');
+        if (container.children.length <= 1) return;
+        btn.parentElement.remove();
+        reindex();
+    }
+
+    function reindex() {
+        document.querySelectorAll('#order-items .order-item').forEach((item, i) => {
+            item.querySelectorAll('input[type=number]').forEach(input => {
+                input.name = input.name.replace(/\[\d+\]/, `[${i}]`);
+            });
+        });
+    }
+</script>
+
+</body>
+</html>

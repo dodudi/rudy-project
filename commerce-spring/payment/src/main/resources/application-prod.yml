@@ -1,0 +1,32 @@
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST}:${DB_PORT}/payment
+    username: ${DB_USER}
+    password: ${DB_PASS}
+
+  sql:
+    init:
+      mode: never
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: 6379
+
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST}:9094
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: payment-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_HOST}:${EUREKA_PORT}/eureka/
+  instance:
+    prefer-ip-address: true
