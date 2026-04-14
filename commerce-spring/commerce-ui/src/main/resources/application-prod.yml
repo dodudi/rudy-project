@@ -1,9 +1,0 @@
-commerce:
-  api:
-    url: http://${GATEWAY_HOST}:8080
-    prefix: /api/commerce
-
-payment:
-  api:
-    url: http://${GATEWAY_HOST}:8080
-    prefix: /api/payment
