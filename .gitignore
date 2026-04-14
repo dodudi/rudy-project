@@ -124,8 +124,9 @@ docker/postgresql-data
 /coveragea
 
 # next.js
-/.next/
-/out/
+blog-nextjs/.next
+blog-nextjs/out
+blog-nextjs/node_modules
 
 # production
 /build
@@ -160,3 +161,5 @@ next-env.d.ts
 docker/minio-data
 postgres-data
 redis-data
+postgresql-data
+minio-data
