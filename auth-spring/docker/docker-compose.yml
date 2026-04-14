@@ -13,7 +13,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-
+    networks:
+      - auth-net
   redis:
     image: redis:7-alpine
     container_name: auth-redis
@@ -26,3 +27,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - auth-net
+networks:
+  auth-net:
+    driver: bridge
