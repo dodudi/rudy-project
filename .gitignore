@@ -158,3 +158,5 @@ next-env.d.ts
 
 .claude/settings.local.json
 docker/minio-data
+postgres-data
+redis-data
