@@ -2,6 +2,7 @@ package com.auth.user.dto;
 
 import com.auth.user.domain.User;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -11,7 +12,7 @@ public record UserResponse(
         String nickname,
         String status,
         boolean emailVerified,
-        LocalDateTime createdAt
+        Instant createdAt
 ) {
     public static UserResponse from(User user) {
         return new UserResponse(

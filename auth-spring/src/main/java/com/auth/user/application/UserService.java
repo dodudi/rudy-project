@@ -51,11 +51,11 @@ public class UserService {
 
         User saved = userRepository.save(user);
 
-        String token = UUID.randomUUID().toString();
-        redisTemplate.opsForValue().set(EMAIL_VERIFY_KEY_PREFIX + token, saved.getId().toString(), EMAIL_VERIFY_TTL);
+//        String token = UUID.randomUUID().toString();
+//        redisTemplate.opsForValue().set(EMAIL_VERIFY_KEY_PREFIX + token, saved.getId().toString(), EMAIL_VERIFY_TTL);
 
         // TODO: 실제 이메일 발송으로 교체 (현재는 로그로 대체)
-        log.info("[EMAIL VERIFICATION] email={}, token={}", saved.getEmail(), token);
+//        log.info("[EMAIL VERIFICATION] email={}, token={}", saved.getEmail(), token);
 
         return UserResponse.from(saved);
     }
