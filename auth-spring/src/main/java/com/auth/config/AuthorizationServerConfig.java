@@ -8,8 +8,10 @@ import com.nimbusds.jose.proc.SecurityContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
@@ -22,6 +24,7 @@ import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
+import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
@@ -41,6 +44,7 @@ import java.util.stream.Collectors;
 public class AuthorizationServerConfig {
 
     private final RsaProperty rsaProperty;
+    private final ClientProperty clientProperty;
 
     @Bean
     @Order(1)
@@ -64,7 +68,40 @@ public class AuthorizationServerConfig {
     }
 
     @Bean
-    public RegisteredClientRepository registeredClientRepository(PasswordEncoder passwordEncoder) {
+    @Profile("prod")
+    public RegisteredClientRepository prodRegisteredClientRepository(
+            JdbcTemplate jdbcTemplate,
+            PasswordEncoder passwordEncoder
+    ) {
+        JdbcRegisteredClientRepository repository = new JdbcRegisteredClientRepository(jdbcTemplate);
+
+        // DB에 클라이언트가 없을 때만 초기 등록
+        if (repository.findByClientId(clientProperty.getId()) == null) {
+            RegisteredClient client = RegisteredClient.withId(UUID.randomUUID().toString())
+                    .clientId(clientProperty.getId())
+                    .clientSecret(passwordEncoder.encode(clientProperty.getSecret()))
+                    .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                    .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                    .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+                    .redirectUri(clientProperty.getRedirectUri())
+                    .postLogoutRedirectUri(clientProperty.getPostLogoutRedirectUri())
+                    .scope(OidcScopes.OPENID)
+                    .scope(OidcScopes.PROFILE)
+                    .clientSettings(ClientSettings.builder()
+                            .requireProofKey(true)
+                            .requireAuthorizationConsent(true)
+                            .build()
+                    )
+                    .build();
+            repository.save(client);
+        }
+
+        return repository;
+    }
+
+    @Bean
+    @Profile("local")
+    public RegisteredClientRepository localRegisteredClientRepository(PasswordEncoder passwordEncoder) {
         RegisteredClient oidcClient = RegisteredClient.withId(UUID.randomUUID().toString())
                 .clientId("oidc-client")
                 .clientSecret(passwordEncoder.encode("secret"))
