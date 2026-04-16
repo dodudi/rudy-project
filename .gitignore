@@ -165,3 +165,4 @@ postgres-data
 redis-data
 postgresql-data
 minio-data
+test-client
