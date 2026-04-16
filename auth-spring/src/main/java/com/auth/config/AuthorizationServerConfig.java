@@ -8,7 +8,6 @@ import com.nimbusds.jose.proc.SecurityContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -23,7 +22,6 @@ import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
-import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
@@ -68,8 +66,7 @@ public class AuthorizationServerConfig {
     }
 
     @Bean
-    @Profile("prod")
-    public RegisteredClientRepository prodRegisteredClientRepository(
+    public RegisteredClientRepository registeredClientRepository(
             JdbcTemplate jdbcTemplate,
             PasswordEncoder passwordEncoder
     ) {
@@ -97,31 +94,6 @@ public class AuthorizationServerConfig {
         }
 
         return repository;
-    }
-
-    @Bean
-    @Profile("local")
-    public RegisteredClientRepository localRegisteredClientRepository(PasswordEncoder passwordEncoder) {
-        RegisteredClient oidcClient = RegisteredClient.withId(UUID.randomUUID().toString())
-                .clientId("oidc-client")
-                .clientSecret(passwordEncoder.encode("secret"))
-                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-                .redirectUri("http://localhost:8080/login/oauth2/code/oidc-client")
-                .redirectUri("http://localhost:3000/callback")
-                .postLogoutRedirectUri("http://localhost:8080/")
-                .postLogoutRedirectUri("http://localhost:3000/?logged_out=true")
-                .scope(OidcScopes.OPENID)
-                .scope(OidcScopes.PROFILE)
-                .clientSettings(ClientSettings.builder()
-                        .requireProofKey(false)
-                        .requireAuthorizationConsent(true)
-                        .build()
-                )
-                .build();
-
-        return new InMemoryRegisteredClientRepository(oidcClient);
     }
 
     @Bean

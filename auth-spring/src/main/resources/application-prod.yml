@@ -3,6 +3,11 @@ auth:
   rsa:
     private-key: ${RSA_PRIVATE_KEY}
     public-key: ${RSA_PUBLIC_KEY}
+  client:
+    id: ${OAUTH2_CLIENT_ID}
+    secret: ${OAUTH2_CLIENT_SECRET}
+    redirect-uri: ${OAUTH2_REDIRECT_URI}
+    post-logout-redirect-uri: ${OAUTH2_POST_LOGOUT_REDIRECT_URI}
 spring:
   datasource:
     url: ${DB_URL}
