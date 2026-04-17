@@ -5,9 +5,11 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -43,6 +45,7 @@ public class AuthorizationServerConfig {
 
     private final RsaProperty rsaProperty;
     private final ClientProperty clientProperty;
+    private final CustomAuthorizationServerFailureHandler customAuthorizationServerFailureHandler;
 
     @Bean
     @Order(1)
@@ -51,10 +54,12 @@ public class AuthorizationServerConfig {
                 .oauth2AuthorizationServer((authorizationServer) -> {
                     http.securityMatcher(authorizationServer.getEndpointsMatcher());
                     authorizationServer.oidc(Customizer.withDefaults());
+                    authorizationServer.authorizationEndpoint(endpoint -> endpoint.errorResponseHandler(customAuthorizationServerFailureHandler));
                 })
                 .authorizeHttpRequests((authorize) ->
                         authorize.anyRequest().authenticated()
                 )
+
                 .exceptionHandling((exceptions) -> exceptions
                         .defaultAuthenticationEntryPointFor(
                                 new LoginUrlAuthenticationEntryPoint("http://localhost:3000/login"),
@@ -72,26 +77,26 @@ public class AuthorizationServerConfig {
     ) {
         JdbcRegisteredClientRepository repository = new JdbcRegisteredClientRepository(jdbcTemplate);
 
-        // DB에 클라이언트가 없을 때만 초기 등록
-        if (repository.findByClientId(clientProperty.getId()) == null) {
-            RegisteredClient client = RegisteredClient.withId(UUID.randomUUID().toString())
-                    .clientId(clientProperty.getId())
-                    .clientSecret(passwordEncoder.encode(clientProperty.getSecret()))
-                    .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-                    .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                    .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-                    .redirectUri(clientProperty.getRedirectUri())
-                    .postLogoutRedirectUri(clientProperty.getPostLogoutRedirectUri())
-                    .scope(OidcScopes.OPENID)
-                    .scope(OidcScopes.PROFILE)
-                    .clientSettings(ClientSettings.builder()
-                            .requireProofKey(true)
-                            .requireAuthorizationConsent(true)
-                            .build()
-                    )
-                    .build();
-            repository.save(client);
-        }
+        RegisteredClient existing = repository.findByClientId(clientProperty.getId());
+        String clientUuid = existing != null ? existing.getId() : UUID.randomUUID().toString();
+
+        RegisteredClient client = RegisteredClient.withId(clientUuid)
+                .clientId(clientProperty.getId())
+                .clientSecret(passwordEncoder.encode(clientProperty.getSecret()))
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+                .redirectUri(clientProperty.getRedirectUri())
+                .postLogoutRedirectUri(clientProperty.getPostLogoutRedirectUri())
+                .scope(OidcScopes.OPENID)
+                .scope(OidcScopes.PROFILE)
+                .clientSettings(ClientSettings.builder()
+                        .requireProofKey(false)
+                        .requireAuthorizationConsent(true)
+                        .build()
+                )
+                .build();
+        repository.save(client);
 
         return repository;
     }
