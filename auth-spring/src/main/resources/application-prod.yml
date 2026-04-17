@@ -8,6 +8,7 @@ auth:
     secret: ${OAUTH2_CLIENT_SECRET}
     redirect-uri: ${OAUTH2_REDIRECT_URI}
     post-logout-redirect-uri: ${OAUTH2_POST_LOGOUT_REDIRECT_URI}
+    login-redirect-uri: ${OAUTH2_LOGIN_REDIRECT_URI}
 spring:
   datasource:
     url: ${DB_URL}
