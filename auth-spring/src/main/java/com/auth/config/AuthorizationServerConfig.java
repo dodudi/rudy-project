@@ -60,7 +60,7 @@ public class AuthorizationServerConfig {
 
                 .exceptionHandling((exceptions) -> exceptions
                         .defaultAuthenticationEntryPointFor(
-                                new LoginUrlAuthenticationEntryPoint(clientProperty.getRedirectUri()),
+                                new LoginUrlAuthenticationEntryPoint(clientProperty.getLoginRedirectUri()),
                                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
                         )
                 );
