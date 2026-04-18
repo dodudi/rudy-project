@@ -1,4 +1,4 @@
-package com.auth.config;
+package com.auth.security.application;
 
 import com.auth.user.domain.User;
 import com.auth.user.domain.UserRepository;

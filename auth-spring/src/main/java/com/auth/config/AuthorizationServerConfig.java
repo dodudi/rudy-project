@@ -1,5 +1,8 @@
 package com.auth.config;
 
+import com.auth.security.handler.CustomAuthorizationServerFailureHandler;
+import com.auth.security.property.ClientProperty;
+import com.auth.security.property.RsaProperty;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;

@@ -1,4 +1,4 @@
-package com.auth.config;
+package com.auth.security.property;
 
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
