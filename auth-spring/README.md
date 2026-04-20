@@ -1,6 +1,6 @@
 # auth-spring
 
-Spring Boot 기반 OAuth2 인증 서버. Google·Kakao 소셜 로그인을 지원하며, Authorization Code + PKCE 및 Client Credentials 흐름을 제공합니다.
+Spring Boot 기반 OAuth2 인증 서버. Google 소셜 로그인을 지원하며, Authorization Code + PKCE 및 Client Credentials 흐름을 제공합니다.
 
 ---
 
@@ -35,7 +35,6 @@ graph TB
 
     subgraph Social["소셜 제공자"]
         GOOGLE["Google<br/>(OIDC)"]
-        KAKAO["Kakao<br/>(OAuth2)"]
     end
 
     subgraph Storage["저장소"]
@@ -46,9 +45,7 @@ graph TB
     SPA -->|"① GET /oauth2/authorize"| AS
     AS -->|"② /login 리다이렉트"| SEC
     SEC -->|"③ 소셜 로그인 요청"| GOOGLE
-    SEC -->|"③ 소셜 로그인 요청"| KAKAO
     GOOGLE -->|"④ 콜백"| SEC
-    KAKAO -->|"④ 콜백"| SEC
     SEC -->|"⑤ 인가코드 발급"| AS
     AS -->|"⑥ code"| SPA
     SPA -->|"⑦ POST /oauth2/token"| AS
@@ -89,9 +86,9 @@ flowchart TD
     end
 
     subgraph C3["Order 3 — SecurityConfig (Default)"]
-        FL["Form Login\nPOST /login → CustomUserDetailsService"]
-        FL_OK["세션 발급 후 OAuth2 흐름 복귀"]
-        FL_FAIL["401 Unauthorized"]
+        FL["Form Login / OAuth2 Login\nPOST /login → CustomUserDetailsService\nGET /oauth2/authorization/google → SocialOAuth2UserService"]
+        FL_OK["세션 발급 후 OAuth2 흐름 복귀\n(JsonAuthenticationSuccessHandler)"]
+        FL_FAIL["401 Unauthorized\n(JsonAuthenticationFailureHandler)"]
     end
 
     REQ --> CHECK1
@@ -123,6 +120,8 @@ flowchart TD
 | `POST /api/v1/users/signup` | Order 2 (RS) | permitAll |
 | `GET /api/v1/users/me` | Order 2 (RS) | Bearer JWT + `ROLE_USER` |
 | `POST /login` | Order 3 (Default) | Form Login (ID/PW) |
+| `GET /oauth2/authorization/google` | Order 3 (Default) | OAuth2 소셜 로그인 (Google) |
+| `GET /login/oauth2/code/google` | Order 3 (Default) | Google 콜백 처리 |
 
 ---
 
@@ -177,7 +176,7 @@ erDiagram
     social_accounts {
         UUID id PK
         UUID user_id FK
-        VARCHAR provider "GOOGLE / KAKAO"
+        VARCHAR provider "GOOGLE"
         VARCHAR provider_id
         TIMESTAMP created_at
     }
@@ -213,7 +212,7 @@ sequenceDiagram
     actor User as 사용자
     participant SPA as SPA (localhost:3000)
     participant AS as auth-spring
-    participant Google as Google / Kakao
+    participant Google as Google
     participant DB as PostgreSQL
     participant Redis as Redis
 
@@ -221,15 +220,14 @@ sequenceDiagram
     SPA->>AS: GET /oauth2/authorize<br/>?client_id=dev-spa-client<br/>&code_challenge=S256<br/>&scope=openid profile read
     AS->>SPA: 302 → /login (SavedRequest 저장)
     SPA->>AS: GET /login
-    AS->>SPA: 로그인 페이지 (Form + Google/Kakao 버튼)
+    AS->>SPA: 로그인 페이지 (Form + Google 버튼)
     User->>AS: Google 로그인 클릭
     AS->>Google: GET /oauth2/authorization/google
     Google->>AS: 콜백 /login/oauth2/code/google?code=...
     AS->>Google: 사용자 정보 요청
     Google->>AS: email, name, sub 반환
-    AS->>DB: SocialAccount 조회/생성<br/>User 조회/생성
-    AS->>AS: CustomOidcUser 생성<br/>(authorities = ROLE_USER)
-    AS->>AS: SavedRequest 복원<br/>→ /oauth2/authorize 재처리
+    AS->>DB: SocialAccount 조회/생성<br/>User 조회/생성 (SocialOAuth2UserService)
+    AS->>AS: JsonAuthenticationSuccessHandler<br/>SavedRequest 복원 → /oauth2/authorize 재처리
     AS->>SPA: 302 → /callback?code=<인가코드>
     SPA->>AS: POST /oauth2/token<br/>grant_type=authorization_code<br/>&code_verifier=...
     AS->>DB: oauth2_authorization 저장
@@ -340,7 +338,7 @@ gantt
     M3 사용자 도메인·회원가입      :done, m3, after m2, 1d
     M4 Authorization Server 설정  :done, m4, after m3, 1d
     M5 토큰 관리·Redis 연동       :done, m5, after m4, 1d
-    M6 소셜 로그인 (Google·Kakao) :done, m6, after m5, 1d
+    M6 소셜 로그인 (Google)       :done, m6, after m5, 1d
     section 예정
     M7 RBAC 구현                  :m7, after m6, 1d
     M8 Admin API                  :m8, after m7, 1d
@@ -389,13 +387,14 @@ gantt
 
 ### M6 — 소셜 로그인 ✅
 
-- Google OIDC 로그인 (`CustomOidcUserService`)
-- Kakao OAuth2 로그인 (`CustomOAuth2UserService`)
-- 소셜 계정 연동 3단계 전략 (`SocialUserRegistrationService`):
-  1. `provider + providerId` → 기존 계정 반환
-  2. 동일 이메일 기존 계정 → 소셜 계정 연동
-  3. 신규 계정 생성 (`emailVerified=true` 자동 설정)
-- `SecurityConfig` — `oauth2Login` 통합, 로그인 성공 후 `/swagger-ui.html` 폴백
+- Google OAuth2 로그인 (`SocialOAuth2UserService`)
+- 소셜 계정 연동 3단계 전략:
+  1. `provider + providerId` 일치 → 기존 계정 반환
+  2. 동일 이메일 기존 계정 → 소셜 계정 연결 후 반환
+  3. 신규 계정 자동 생성 + 소셜 계정 연결 (비밀번호 랜덤 UUID)
+- `JsonAuthenticationSuccessHandler` — SavedRequest 있으면 리다이렉트, 없으면 JSON 반환
+- `JsonAuthenticationFailureHandler` — 인증 실패 시 JSON 반환
+- `SocialProvider` enum — 현재 `GOOGLE`만 지원
 
 ---
 
@@ -436,14 +435,12 @@ docker run -d -p 6379:6379 redis
 | 제공자 | 콜백 URI |
 |---|---|
 | Google | `http://localhost:8080/login/oauth2/code/google` |
-| Kakao | `http://localhost:8080/login/oauth2/code/kakao` |
 
 ### 환경변수 설정 (선택 — 소셜 로그인 필요 시)
 
 ```bash
 export GOOGLE_CLIENT_ID=<Google Cloud Console 발급>
 export GOOGLE_CLIENT_SECRET=<Google Cloud Console 발급>
-export KAKAO_CLIENT_ID=<카카오 개발자 콘솔 발급>
 ```
 
 ### 실행

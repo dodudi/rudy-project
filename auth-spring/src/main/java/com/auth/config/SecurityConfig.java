@@ -1,6 +1,8 @@
 package com.auth.config;
 
-import jakarta.servlet.http.HttpServletResponse;
+import com.auth.security.application.SocialOAuth2UserService;
+import com.auth.security.property.ClientProperty;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -16,37 +18,41 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final ClientProperty clientProperty;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // Form Login: Authorization Server가 사용자 인증할 때 사용
     @Bean
     @Order(3)
-    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, SocialOAuth2UserService socialOAuth2UserService) throws Exception {
+        JsonAuthenticationSuccessHandler successHandler = new JsonAuthenticationSuccessHandler();
+        JsonAuthenticationFailureHandler failureHandler = new JsonAuthenticationFailureHandler();
+
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .authorizeHttpRequests((authorize) -> authorize
+                .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/oauth/error").permitAll()
                         .anyRequest().authenticated()
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(form -> form
                         .loginProcessingUrl("/login")
-                        .successHandler((request, response, authentication) -> {
-                            response.setContentType("application/json;charset=UTF-8");
-                            response.setStatus(HttpServletResponse.SC_OK);
-                            response.getWriter().write("{\"result\":\"success\"}");
-                        })
-                        .failureHandler((request, response, exception) -> {
-                            response.setContentType("application/json;charset=UTF-8");
-                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            response.getWriter().write("{\"result\":\"fail\",\"message\":\"아이디 또는 비밀번호가 올바르지 않습니다.\"}");
-                        })
+                        .successHandler(successHandler)
+                        .failureHandler(failureHandler)
                         .permitAll()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage(clientProperty.getLoginRedirectUri())
+                        .successHandler(successHandler)
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(socialOAuth2UserService)
+                        )
                 );
 
         return http.build();

@@ -1,5 +1,5 @@
 package com.auth.user.domain;
 
 public enum SocialProvider {
-    GOOGLE, KAKAO
+    GOOGLE
 }

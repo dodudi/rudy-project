@@ -122,7 +122,7 @@ H2 콘솔: prod에서 `enabled: false`.
 |---|---|---|---|
 | 1 | `authorizationServerSecurityFilterChain` | OAuth2 엔드포인트 | Authorization Server (토큰 발급, OIDC 등) |
 | 2 | `resourceServerSecurityFilterChain` | `/api/**` | Resource Server (JWT 검증) |
-| 3 | `defaultSecurityFilterChain` | 나머지 전체 | formLogin (사용자 인증 UI) |
+| 3 | `defaultSecurityFilterChain` | 나머지 전체 | formLogin + oauth2Login (사용자 인증 UI) |
 
 ### OAuth2 설정 (AuthorizationServerConfig)
 
@@ -145,10 +145,12 @@ H2 콘솔: prod에서 `enabled: false`.
 - 메서드 보안: `@EnableMethodSecurity` → `@PreAuthorize` 사용 가능
 - `/api/v1/users/signup` — 인증 없이 접근 허용 (나머지 `/api/**`는 JWT 필수)
 
-### formLogin 설정 (SecurityConfig)
+### formLogin / oauth2Login 설정 (SecurityConfig)
 
-- 로그인 처리: `POST /login`
-- 성공/실패 응답: JSON (`application/json;charset=UTF-8`)
+- 로그인 처리: `POST /login` (Form), `GET /oauth2/authorization/google` (소셜)
+- **성공 핸들러**: `JsonAuthenticationSuccessHandler` — SavedRequest가 있으면 리다이렉트(OAuth2 흐름 복귀), 없으면 JSON 반환
+- **실패 핸들러**: `JsonAuthenticationFailureHandler` — 401 JSON 반환
+- **소셜 로그인**: `SocialOAuth2UserService` — Google 사용자 조회/생성/연결 처리
 - `/oauth/error` — 명시적 `permitAll()`
 - CORS 허용 origin: `http://localhost:3000` (하드코딩)
 - CSRF: 비활성화
@@ -261,9 +263,13 @@ com.auth
 │   ├── application/   # UserService
 │   ├── domain/        # User, Role, SocialAccount, *Repository, UserStatus, SocialProvider
 │   └── dto/           # SignUpRequest, UpdateNicknameRequest, VerifyEmailRequest, UserResponse
+├── security/
+│   ├── application/   # SocialOAuth2UserService (Google 소셜 로그인 사용자 처리)
+│   └── property/      # ClientProperty
 └── config/            # 보안·인프라 설정
     # AuthorizationServerConfig, SecurityConfig, ResourceServerConfig
     # CustomUserDetailsService, CustomUserDetails
+    # JsonAuthenticationSuccessHandler, JsonAuthenticationFailureHandler
     # CustomAuthorizationServerFailureHandler, OAuthErrorController
     # RsaProperty, ClientProperty
     # JpaConfig
