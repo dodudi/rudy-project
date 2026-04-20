@@ -201,7 +201,34 @@ erDiagram
 
 ## 인증 흐름
 
-### 1. 소셜 로그인 → Authorization Code (SPA 대상)
+### 1. 이메일/비밀번호 로그인 → Authorization Code (SPA 대상)
+
+```mermaid
+sequenceDiagram
+    actor User as 사용자
+    participant SPA as SPA (localhost:3000)
+    participant AS as auth-spring
+    participant DB as PostgreSQL
+    participant Redis as Redis
+
+    User->>SPA: 로그인 버튼 클릭
+    SPA->>AS: GET /oauth2/authorize<br/>?client_id=...&scope=openid profile
+    AS->>SPA: 302 → /login (SavedRequest 저장)
+    SPA->>AS: GET /login
+    AS->>SPA: 로그인 페이지 (Form + Google 버튼)
+    User->>AS: POST /login<br/>{email, password}
+    AS->>DB: CustomUserDetailsService<br/>email로 사용자 조회
+    DB->>AS: User + roles 반환
+    AS->>AS: bcrypt.compare(password, hash) 검증
+    AS->>Redis: 세션 저장 (Spring Session, 1시간)
+    AS->>AS: JsonAuthenticationSuccessHandler<br/>SavedRequest 복원 → /oauth2/authorize 재처리
+    AS->>SPA: 302 → /callback?code=<인가코드>
+    SPA->>AS: POST /oauth2/token<br/>grant_type=authorization_code&code=...
+    Note over AS: oauth2_authorization InMemory 저장
+    AS->>SPA: access_token + refresh_token
+```
+
+### 2. 소셜 로그인 → Authorization Code (SPA 대상)
 
 ```mermaid
 sequenceDiagram
@@ -231,7 +258,7 @@ sequenceDiagram
     AS->>SPA: access_token + refresh_token
 ```
 
-### 2. 이메일/비밀번호 회원가입
+### 3. 이메일/비밀번호 회원가입
 
 > ⚠️ 이메일 인증(`POST /api/v1/users/verify-email`)은 미구현 상태입니다. Redis 토큰 저장 및 발송 코드가 주석 처리되어 있어 항상 `T001 INVALID_TOKEN` 에러를 반환합니다.
 
