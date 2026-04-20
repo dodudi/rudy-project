@@ -313,3 +313,29 @@ Claude는 이 프로젝트에서 항상 **한국어**로 응답한다. 코드와
 
 `@SpringBootTest`로 전체 컨텍스트를 로드하는 통합 테스트를 기본으로 사용한다.
 H2가 테스트 JPA 런타임이며, Redis 테스트는 embedded Redis 지원을 사용한다.
+
+### Dockerfile
+
+- **멀티 스테이지 빌드** 필수: `builder`(JDK) → 실행(JRE) 2단계로 이미지 크기를 최소화한다.
+- **베이스 이미지**: `eclipse-temurin:21-jdk-jammy`(빌드) / `eclipse-temurin:21-jre-jammy`(실행). Java 버전이 변경되면 두 이미지 모두 함께 변경한다.
+- **레이어 캐시 최적화**: `gradlew` + `gradle/` + `build.gradle` + `settings.gradle` 복사 → `dependencies` 실행 → `src/` 복사 순서를 유지한다. 소스 변경 시 의존성 레이어가 재빌드되지 않는다.
+- **테스트 제외**: `bootJar` 시 `-x test`를 붙인다. 테스트는 CI 파이프라인에서 별도로 실행한다.
+- **비루트 실행**: `addgroup` / `adduser`로 전용 시스템 계정을 생성하고 `USER`로 전환한 뒤 애플리케이션을 실행한다.
+- **프로파일 주입 금지**: `SPRING_PROFILES_ACTIVE` 등 환경 설정은 이미지에 굽지 않고 컨테이너 실행 시 `-e`로 주입한다.
+- **민감 정보 금지**: `ARG` / `ENV`로 시크릿(DB 비밀번호, RSA 키 등)을 Dockerfile에 하드코딩하지 않는다.
+
+```bash
+# 빌드
+docker build -t auth-spring .
+
+# 실행
+docker run -p 8080:8080 \
+  -e SPRING_PROFILES_ACTIVE=prod \
+  -e DB_URL=jdbc:postgresql://host:5432/db \
+  -e DB_USERNAME=user \
+  -e DB_PASSWORD=secret \
+  -e REDIS_HOST=host \
+  -e RSA_PRIVATE_KEY=... \
+  -e RSA_PUBLIC_KEY=... \
+  auth-spring
+```
